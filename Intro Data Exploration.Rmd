@@ -1,0 +1,37 @@
+---
+title: "Intro Data Exploration"
+author: "Ty Hammond"
+date: "2024-11-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Data Exploration:
+
+We have an initial idea of looking at the number of pass rushers and the number of defenders in the box and the effect that had on play outcome. Outcome here can be a completed pass, incomplete pass, penalty, sack, or rush. We are utilizing the plays.csv file from kaggle. I will explore this topic below:
+
+```{r}
+# Read in csv File
+plays <- read.csv("plays.csv")
+
+# Give Variable Names
+names(plays)
+
+# Examine Important Variables
+plays$playType
+plays$playResult
+plays$yardsToGo
+plays$typeDropback
+plays$playId
+plays$playDescription
+plays$defendersInTheBox
+plays$numberOfPassRushers
+plays$passResult
+plays$isDefensivePI
+plays$epa
+plays$down
+plays$
+```
