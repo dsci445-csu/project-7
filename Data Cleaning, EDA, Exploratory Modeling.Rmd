@@ -1,0 +1,166 @@
+---
+title: "Data Cleaning, EDA, and Modeling"
+author: "Jaret Stickrod"
+output: html_document
+date: "2024-11-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Install required libraries if not already installed
+if (!requireNamespace("mgcv", quietly = TRUE)) install.packages("mgcv")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
+if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+```
+
+
+### Research Question: How does the number of defenders in the box and number of pass rushers affect the play result?
+
+## Data Cleaning
+
+```{r}
+library(dplyr)
+library(tidyverse)
+
+df <- read.csv("plays.csv")
+
+# Filter for passing plays only
+df <- df %>%
+  filter(playType == "play_type_pass") %>%
+  select(playResult, defendersInTheBox, numberOfPassRushers) %>%
+  drop_na()
+
+# Binning the predictors
+df <- df %>%
+  mutate(
+    defendersInTheBox_binned = cut(defendersInTheBox, breaks = seq(4, 8, by = 1)),
+    numberOfPassRushers_binned = cut(numberOfPassRushers, breaks = seq(3, 7, by = 1))
+  )
+str(df)
+```
+
+
+## Exploratory Data Analysis
+
+```{r}
+##### Boxplots
+
+library(ggplot2)
+
+ggplot(df, aes(x = factor(defendersInTheBox), y = playResult)) +
+  geom_boxplot() +
+  labs(x = "Defenders in the Box", y = "Play Result", title = "Impact of Defenders on Play Result")
+
+ggplot(df, aes(x = factor(numberOfPassRushers), y = playResult)) +
+  geom_boxplot() +
+  labs(x = "Number of Pass Rushers", y = "Play Result", title = "Impact of Pass Rushers on Play Result")
+
+##### Heatmap
+heatmap_data <- df %>%
+  group_by(defendersInTheBox, numberOfPassRushers) %>%
+  summarise(mean_playResult = mean(playResult, na.rm = TRUE))
+
+ggplot(heatmap_data, aes(x = defendersInTheBox, y = numberOfPassRushers, fill = mean_playResult)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  labs(title = "Heatmap of Play Result by Defenders and Pass Rushers", fill = "Mean Play Result")
+
+```
+```{r}
+##### Check correlations using correlation matrix
+numeric_vars <- c("playResult", "defendersInTheBox", "numberOfPassRushers")
+cor_matrix <- cor(df[, numeric_vars], use = "complete.obs")
+print(cor_matrix)
+
+```
+
+
+
+## Exploratory Modeling 
+
+```{r}
+library(dplyr)
+library(mgcv)
+library(caret)
+
+##### Splitting the Data
+set.seed(123)  # reproducibility
+train_index <- createDataPartition(df$playResult, p = 0.8, list = FALSE)
+train_data <- df[train_index, ]
+test_data <- df[-train_index, ]
+
+##### Exploratory Modeling
+# Linear Regression
+lm_model <- lm(playResult ~ defendersInTheBox + numberOfPassRushers, data = train_data)
+
+# Generalized Additive Model (GAM)
+gam_model <- gam(playResult ~ s(defendersInTheBox) + s(numberOfPassRushers), data = train_data)
+
+##### Cross-Validation
+set.seed(445)
+control <- trainControl(method = "cv", number = 5)  # 5-fold cross-validation
+
+# Cross-Validation for Linear Regression
+cv_lm <- train(
+  playResult ~ defendersInTheBox + numberOfPassRushers,
+  data = train_data,
+  method = "lm",
+  trControl = control
+)
+
+# Cross-Validation for GAM
+cv_gam <- train(
+  playResult ~ defendersInTheBox + numberOfPassRushers,
+  data = train_data,
+  method = "gamSpline",
+  trControl = control
+)
+
+##### Model Performance on Test Data
+# Predict and Evaluate Linear Regression
+lm_predictions <- predict(lm_model, newdata = test_data)
+lm_rmse <- sqrt(mean((lm_predictions - test_data$playResult)^2))
+
+# Predict and Evaluate GAM
+gam_predictions <- predict(gam_model, newdata = test_data)
+gam_rmse <- sqrt(mean((gam_predictions - test_data$playResult)^2))
+
+# Output Results
+cat("=== Model Summaries ===\n")
+cat("Linear Regression:\n")
+print(summary(lm_model))
+cat("\nGAM:\n")
+print(summary(gam_model))
+
+cat("\n=== Cross-Validation Results ===\n")
+cat("Linear Regression Cross-Validation:\n")
+print(cv_lm)
+cat("\nGAM Cross-Validation:\n")
+print(cv_gam)
+
+cat("\n=== Test Set Performance ===\n")
+cat("Linear Regression RMSE:", lm_rmse, "\n")
+cat("GAM RMSE:", gam_rmse, "\n")
+```
+
+1. Both linear regression and GAM explain very little variance in `playResult`, with low R-squared values and high RMSE.  
+2. The number of pass rushers shows a stronger relationship with `playResult`, with GAM indicating non-linearity, while defenders in the box has minimal impact.  
+3. The GAM slightly outperforms linear regression, but the improvement is not significant.  
+ 
+
+
+### Secondary Research Question: Can we classify plays (playType) into sacks, completed passes, or interceptions based on the number of defenders in the box, number of pass rushers, and other features?
+
+```{r}
+#####  Logistic regression to predict likelihood of a sack
+logistic_model <- glm(I(playType == "sack") ~ defendersInTheBox + numberOfPassRushers + absoluteYardlineNumber + down + yardsToGo, 
+                      family = binomial, data = df)
+summary(logistic_model)
+
+```
+
