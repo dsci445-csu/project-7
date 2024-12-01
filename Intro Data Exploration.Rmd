@@ -15,8 +15,12 @@ We have an initial idea of looking at the number of pass rushers and the number 
 
 ```{r}
 #import libraries
-library(ggplot2)
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+```
 
+
+
+```{r}
 # Read in csv File
 plays <- read.csv("plays.csv")
 
@@ -25,7 +29,11 @@ names(plays)
 
 # See Examples
 head(plays)
+```
 
+Individual Variables
+
+```{r}
 # Examine Potentially Important Variables
 
 # Individual Variables below
@@ -140,12 +148,17 @@ ggplot(plays, aes(x = offensePlayResult)) +
   ylab("Frequency") +
   ggtitle("Distribution of Offensive Play Results") +
   theme_minimal()
+```
 
-# Overall dataset
+Combinations of Variables
 
-
-
+```{r}
 # Combinations
 
+```
 
+Overall Dataset
+
+```{r}
+# Overall Data Set
 ```
