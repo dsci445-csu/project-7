@@ -11,27 +11,141 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Data Exploration:
 
-We have an initial idea of looking at the number of pass rushers and the number of defenders in the box and the effect that had on play outcome. Outcome here can be a completed pass, incomplete pass, penalty, sack, or rush. We are utilizing the plays.csv file from kaggle. I will explore this topic below:
+We have an initial idea of looking at the number of pass rushers and the number of defenders in the box and the effect that had on play outcome. We are utilizing the plays.csv file from kaggle which has been imported into GitHub. I will explore this topic below:
 
 ```{r}
+#import libraries
+library(ggplot2)
+
 # Read in csv File
 plays <- read.csv("plays.csv")
 
 # Give Variable Names
 names(plays)
 
-# Examine Important Variables
-plays$playType
-plays$playResult
-plays$yardsToGo
-plays$typeDropback
-plays$playId
-plays$playDescription
-plays$defendersInTheBox
-plays$numberOfPassRushers
-plays$passResult
-plays$isDefensivePI
-plays$epa
-plays$down
-plays$
+# See Examples
+head(plays)
+
+# Examine Potentially Important Variables
+
+# Individual Variables below
+
+#playType
+table(plays$playType) # freq table
+# plot
+ggplot(plays, aes(x = playType)) +
+  geom_bar(fill = "blue") +
+  xlab("Play Type") +
+  ylab("Count") +
+  ggtitle("Distribution of Play Types") +
+  theme_minimal()
+
+#playResult
+summary(plays$playResult) # sum stats
+# hist
+ggplot(plays, aes(x = playResult)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  xlab("Play Result (Yards)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Play Results") +
+  theme_minimal()
+
+#yardsToGo
+summary(plays$yardsToGo) # sum stats
+# hist
+ggplot(plays, aes(x = yardsToGo)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Yards To Go") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Yards To Go") +
+  theme_minimal()
+
+#typeDropback
+table(plays$typeDropback) # freq table
+# bar plot
+# NOTE NEED TO FIX AXIS OVERLAP ***
+ggplot(plays, aes(x = typeDropback)) +
+  geom_bar(fill = "blue") +
+  xlab("Type of Dropback") +
+  ylab("Count") +
+  ggtitle("Distribution of Dropback Types") +
+  theme_minimal()
+
+#defendersInTheBox
+summary(plays$defendersInTheBox) # sum stats
+# hist
+ggplot(plays, aes(x = defendersInTheBox)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Defenders in the Box") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Defenders in the Box") +
+  theme_minimal()
+
+#numberOfPassRushers
+summary(plays$numberOfPassRushers) # sum stats
+# hist
+ggplot(plays, aes(x = numberOfPassRushers)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Number of Pass Rushers") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Pass Rushers") +
+  theme_minimal()
+
+#passResult
+table(plays$passResult) # freq table
+# bar plot
+ggplot(plays, aes(x = passResult)) +
+  geom_bar(fill = "blue") +
+  xlab("Pass Result") +
+  ylab("Count") +
+  ggtitle("Distribution of Pass Results") +
+  theme_minimal()
+
+#isDefensivePI
+table(plays$isDefensivePI) # freq table
+# bar plot
+ggplot(plays, aes(x = factor(isDefensivePI))) +
+  geom_bar(fill = "blue") +
+  xlab("Defensive Pass Interference") +
+  ylab("Count") +
+  ggtitle("Defensive Pass Interference Occurrences") +
+  theme_minimal()
+
+#epa
+summary(plays$epa) # sum stats
+# hist
+ggplot(plays, aes(x = epa)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  xlab("Expected Points Added (EPA)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of EPA") +
+  theme_minimal()
+
+#down
+table(plays$down) # freq table
+# bar plot
+ggplot(plays, aes(x = factor(down))) +
+  geom_bar(fill = "lightgreen") +
+  xlab("Down") +
+  ylab("Count") +
+  ggtitle("Distribution of Downs") +
+  theme_minimal()
+
+#offensePlayResult
+summary(plays$offensePlayResult) # sum stats
+# hist
+ggplot(plays, aes(x = offensePlayResult)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  xlab("Offensive Play Result (Yards)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Offensive Play Results") +
+  theme_minimal()
+
+# Overall dataset
+
+
+
+# Combinations
+
+
 ```
