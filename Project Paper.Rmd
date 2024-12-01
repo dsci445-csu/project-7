@@ -3,10 +3,14 @@ title: "NFL Big Data Bowl 2021 Project Paper"
 author: "Ty Hammond, Blake Hammarstrom, Jaret Stickrod, Luke Spencer"
 date: "November 29, 2024"
 output: pdf_document
+indent: true
 fontsize: 12pt
 geometry: a4paper
 header-includes: |
+  \usepackage{indentfirst}
   \usepackage{titling}
+  \usepackage{setspace}
+  \linespread{2} % line spacing
   \newcommand{\university}{Colorado State University}
   \newcommand{\class}{STAT 445: Statistical Machine Learning}
   \newcommand{\professor}{Dr. Andee Kaplan}
@@ -31,7 +35,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Motivation
 
-Insert Motivation Here
+The topic we chose to study is how the defender position in the NFL impacts the result of a play. The motivation for this project comes from the importance of defensive strategies in the outcome of NFL plays. The number of defenders in the box is a gametime decision that significantly impacts the result of a play. Specifically, the focus of this project is to see whether an increase in the number of defenders in the box causes a decrease in yards gained. The significance of this study is the insights the findings can provide to coaches on balancing their defensive playbook between rushing and coverage plays. For example, having more pass-rushers on the play could put pressure on the quarterback but leave downfield open for receivers. On the other hand, not having enough pass-rushers gives the quarterback more time to get the pass off, potentially leaving options open downfield, or leaving the middle vulnerable to a run play. Being able to understand the relationship between defender position and result of play would create a quantifiable measurement that could assist coaches and coordinators in game. 
+
+Our motivation for this project comes from a passion for analytics and football. We share an understanding of the game but being able to dive deeper and find measurable insights from game data creates a different tier of knowledge. Sports analytics is in the middle of an uprising and our project aims to be a part of it. 
+
 
 ## Methodology
 
