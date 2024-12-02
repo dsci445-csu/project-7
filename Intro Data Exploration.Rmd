@@ -133,7 +133,7 @@ ggplot(plays, aes(x = epa)) +
 table(plays$down) # freq table
 # bar plot
 ggplot(plays, aes(x = factor(down))) +
-  geom_bar(fill = "lightgreen") +
+  geom_bar(fill = "blue") +
   xlab("Down") +
   ylab("Count") +
   ggtitle("Distribution of Downs") +

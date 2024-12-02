@@ -61,14 +61,3 @@ Kaplan, Andee. Classification, Class Notes. PDF File. 2024. https://dsci445-csu.
 Kaplan, Andee. Regularization, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/6_regularization/20241015_6_regularization.pdf
 
 Kaplan, Andee. Nonlinear, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/7_nonlinear/20241029_7_nonlinear.pdf
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
