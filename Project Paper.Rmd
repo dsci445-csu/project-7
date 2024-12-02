@@ -7,7 +7,7 @@ indent: true
 fontsize: 12pt
 geometry: a4paper
 header-includes: |
-  \usepackage{indentfirst}
+  \usepackage{indentfirst} % adding indents
   \usepackage{titling}
   \usepackage{setspace}
   \linespread{2} % line spacing
@@ -18,11 +18,11 @@ header-includes: |
     \begin{titlepage}
     \centering
     \vspace*{\fill}
-    {\Huge \bfseries \thetitle}\\[2cm]
-    {\Large \theauthor}\\[1cm]
-    {\Large \university}\\[0.5cm]
-    {\Large \class}\\[0.5cm]
-    {\Large \professor}\\[2cm]
+    {\Huge \bfseries \thetitle}\\[2.5cm]
+    {\large \theauthor}\\[0.5cm]
+    {\large \university}\\[0.5cm]
+    {\large \class}\\[0.5cm]
+    {\large \professor}\\[0.5cm]
     {\large \thedate}
     \vspace*{\fill}
     \end{titlepage}
@@ -39,7 +39,6 @@ The topic we chose to study is how the defender position in the NFL impacts the 
 
 Our motivation for this project comes from a passion for analytics and football. We share an understanding of the game but being able to dive deeper and find measurable insights from game data creates a different tier of knowledge. Sports analytics is in the middle of an uprising and our project aims to be a part of it. 
 
-
 ## Methodology
 
 Insert Methodology Here
@@ -50,7 +49,7 @@ Insert Conclusions Here
 
 ## References
 
-Insert References Here
+The National Football League. 2021. NFL Big Data Bowl 2021. Retrieved Oct 29, 2024, from https://www.kaggle.com/competitions/nfl-big-data-bowl-2021/data
 
 ## Including Plots
 
