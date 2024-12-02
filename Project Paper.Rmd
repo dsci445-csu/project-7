@@ -51,6 +51,17 @@ Insert Conclusions Here
 
 The National Football League. 2021. NFL Big Data Bowl 2021. Retrieved Oct 29, 2024, from https://www.kaggle.com/competitions/nfl-big-data-bowl-2021/data
 
+Kaplan, Andee. Statistical Learning, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/2_stat_learning/20240829_2_stat_learning.pdf
+
+Kaplan, Andee. Regression, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/3_regression/20240910_3_regression.pdf
+
+Kaplan, Andee. Classification, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/4_classification/20240919_4_classification.pdf
+
+Kaplan, Andee. Regularization, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/6_regularization/20241015_6_regularization.pdf
+
+Kaplan, Andee. Nonlinear, Class Notes. PDF File. 2024. https://dsci445-csu.github.io/notes/7_nonlinear/20241029_7_nonlinear.pdf
+
+
 ## Including Plots
 
 You can also embed plots, for example:
