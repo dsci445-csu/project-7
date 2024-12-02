@@ -16,6 +16,7 @@ if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
 if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
 if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
 if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("randomForest", quietly = TRUE)) install.packages("randomForest")
 ```
 
 
@@ -164,3 +165,25 @@ summary(logistic_model)
 
 ```
 
+```{r}
+library(randomForest)
+library(caret)
+
+clean_df <- na.omit(df[, c("defendersInTheBox", "playResult", "numberOfPassRushers")])
+
+set.seed(123)
+
+train <- createDataPartition(clean_df$playResult, p = 0.8, list = FALSE)
+train_data <- clean_df[train, ]
+test_data <- clean_df[-train, ]
+
+rf <- randomForest(playResult ~ defendersInTheBox + numberOfPassRushers, data = train_data, ntree = 100)
+
+prediction <- predict(rf, test_data)
+confusionMatrix(as.factor(round(prediction)), as.factor(round(test_data$playResult)))
+
+importance(rf)
+
+```
+The andom forest is not a good model to use given it can only accurately predict the relationship
+4.59% of the time. 
