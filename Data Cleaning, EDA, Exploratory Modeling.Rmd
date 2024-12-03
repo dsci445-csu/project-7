@@ -188,9 +188,10 @@ predicted <- factor(round(prediction), levels = levels(actual))
 cm <- confusionMatrix(predicted, actual)
 cm
 importance(rf)
+varImpPlot(rf)
 ```
 The random forest is not a good model to use given it can only accurately predict the relationship
-4.53% of the time.
+4.53% of the time. Since numberOfPassRushers has an importance score of 6791 and defendersInTheBox has an importance score of 4881 the model is suggesting that numberOfPassRushers is more influential in predicting the outcome of a play. 
 
 ```{r}
 library(xgboost)
@@ -240,3 +241,20 @@ importance <- xgb.importance(feature_names = predictors, model = xgb)
 xgb.plot.importance(importance)
 ```
 
+```{r}
+library(pdp)
+
+train_data <- data.frame(defendersInTheBox = rnorm(100), 
+                         numberOfPassRushers = rnorm(100), 
+                         playResult = rnorm(100))
+
+xgb_model <- xgboost(data = as.matrix(train_data[, c("defendersInTheBox", "numberOfPassRushers")]),
+                     label = train_data$playResult,
+                     nrounds = 100,
+                     objective = "reg:squarederror")
+
+pdp_defenders <- partial(xgb_model, pred.var = "defendersInTheBox", train = train_data)
+
+plot(pdp_defenders)
+##Still Debugging, shows how feature affects target holding other variables constant 
+```
