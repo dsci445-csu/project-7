@@ -17,6 +17,8 @@ if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse"
 if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
 if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
 if (!requireNamespace("randomForest", quietly = TRUE)) install.packages("randomForest")
+if (!requireNamespace("xgboost", quietly = TRUE)) install.packages("xgboost")
+
 ```
 
 
@@ -185,5 +187,53 @@ confusionMatrix(as.factor(round(prediction)), as.factor(round(test_data$playResu
 importance(rf)
 
 ```
-The andom forest is not a good model to use given it can only accurately predict the relationship
-4.59% of the time. 
+The random forest is not a good model to use given it can only accurately predict the relationship
+4.59% of the time.
+
+```{r}
+library(xgboost)
+library(dplyr)
+
+set.seed(123)
+
+response <- "playResult"
+predictors <- c("defendersInTheBox", "numberOfPassRushers")
+
+plays <- df %>%
+  mutate(across(all_of(c(response, predictors)), as.numeric))
+
+train <- createDataPartition(plays[[response]], p = 0.8, list = FALSE)
+train_data <- plays[train, ]
+test_data <- plays[-train, ]
+
+train_x <- as.matrix(train_data[, predictors])
+train_y <- train_data[[response]]
+
+test_x <- as.matrix(test_data[, predictors])
+test_y <- test_data[[response]]
+
+params <- list(
+  bjective = "reg:squarederror", 
+  eta = 0.1,      
+  max_depth = 6,   
+  subsample = 0.8, 
+  colsample_bytree = 0.8
+)
+
+xgb <- xgboost(
+  data = train_x,
+  label = train_y,
+  params= params,
+  nrounds = 100,
+  verbose = 0
+)
+
+predictions <- predict(xgb, test_x)
+
+mse <- mean((test_y - predictions)^2)
+rmse <- sqrt(mse)
+
+rmse
+importance <- xgb.importance(feature_names = predictors, model = xgb)
+xgb.plot.importance(importance)
+```
