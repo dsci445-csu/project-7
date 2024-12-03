@@ -174,7 +174,6 @@ library(caret)
 clean_df <- na.omit(df[, c("defendersInTheBox", "playResult", "numberOfPassRushers")])
 
 set.seed(123)
-
 train <- createDataPartition(clean_df$playResult, p = 0.8, list = FALSE)
 train_data <- clean_df[train, ]
 test_data <- clean_df[-train, ]
@@ -182,13 +181,16 @@ test_data <- clean_df[-train, ]
 rf <- randomForest(playResult ~ defendersInTheBox + numberOfPassRushers, data = train_data, ntree = 100)
 
 prediction <- predict(rf, test_data)
-confusionMatrix(as.factor(round(prediction)), as.factor(round(test_data$playResult)))
 
+actual <- factor(round(test_data$playResult))
+predicted <- factor(round(prediction), levels = levels(actual))
+
+cm <- confusionMatrix(predicted, actual)
+cm
 importance(rf)
-
 ```
 The random forest is not a good model to use given it can only accurately predict the relationship
-4.59% of the time.
+4.53% of the time.
 
 ```{r}
 library(xgboost)
@@ -228,12 +230,13 @@ xgb <- xgboost(
   verbose = 0
 )
 
-predictions <- predict(xgb, test_x)
+xgb_predict <- predict(xgb, test_x)
 
-mse <- mean((test_y - predictions)^2)
-rmse <- sqrt(mse)
+xgb_mse <- mean((test_y - xgb_predict)^2)
+xgb_rmse <- sqrt(mse)
 
 rmse
 importance <- xgb.importance(feature_names = predictors, model = xgb)
 xgb.plot.importance(importance)
 ```
+
