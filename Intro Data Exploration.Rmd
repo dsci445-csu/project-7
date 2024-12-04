@@ -16,6 +16,11 @@ We have an initial idea of looking at the number of pass rushers and the number 
 ```{r}
 #import libraries
 if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+library(dplyr)  
+library(tidyverse)
+library(ggplot2)
 ```
 
 Read In Data
@@ -29,6 +34,32 @@ names(plays)
 
 # See Examples
 head(plays)
+```
+
+Overall Dataset Quality
+
+```{r}
+# get NAs and proportion
+na_summary <- data.frame(
+  Variable = names(plays),
+  NA_Count = sapply(plays, function(x) sum(is.na(x))),
+  NA_Proportion = sapply(plays, function(x) mean(is.na(x)))
+)
+# get unique value counts
+unique_summary <- data.frame(
+  Variable = names(plays),
+  Unique_Values = sapply(plays, function(x) length(unique(na.omit(x))))
+)
+# get data types
+data_types <- data.frame(
+  Variable = names(plays),
+  Data_Type = sapply(plays, class)
+)
+# combine into one
+final_summary <- merge(na_summary, unique_summary, by = "Variable")
+final_summary <- merge(final_summary, data_types, by = "Variable")
+# print overall summary
+print(final_summary)
 ```
 
 Individual Variables
@@ -155,11 +186,85 @@ Combinations of Variables
 ```{r}
 # Combinations
 
-#
-```
+# number of pass rusher vs play result
+ggplot(plays, aes(x = factor(numberOfPassRushers), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Number of Pass Rushers") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Number of Pass Rushers") +
+  theme_minimal()
 
-Overall Dataset
+#defenders in box vs play result
+ggplot(plays, aes(x = factor(defendersInTheBox), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Defenders in the Box") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Defenders in the Box") +
+  theme_minimal()
 
-```{r}
-# Overall Data Set
+# number of pass rushers vs defenders in box
+# heatmap
+counts <- plays %>%
+  group_by(numberOfPassRushers, defendersInTheBox) %>%
+  summarise(Count = n())
+ggplot(counts, aes(x = factor(numberOfPassRushers), y = factor(defendersInTheBox), fill = Count)) +
+  geom_tile() +
+  xlab("Number of Pass Rushers") +
+  ylab("Defenders in the Box") +
+  ggtitle("Counts of Plays by Pass Rushers and Defenders in the Box") +
+  scale_fill_gradient(low = "white", high = "red") 
+
+# passresult vs number of pass rushers
+ggplot(plays, aes(x = passResult, fill = factor(numberOfPassRushers))) +
+  geom_bar(position = "dodge") +
+  xlab("Pass Result") +
+  ylab("Count") +
+  ggtitle("Pass Result by Number of Pass Rushers") +
+  theme_minimal()
+
+# epa vs number of pass rushers
+ggplot(plays, aes(x = factor(numberOfPassRushers), y = epa)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Number of Pass Rushers") +
+  ylab("Expected Points Added (EPA)") +
+  ggtitle("EPA by Number of Pass Rushers") +
+  theme_minimal()
+
+# down vs play result
+ggplot(plays, aes(x = factor(down), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Down") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Down") +
+  theme_minimal()
+
+#type of dropback vs play result
+ggplot(plays, aes(x = typeDropback, y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Type of Dropback") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Type of Dropback") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme_minimal()
+
+# is defensivePi vs play result
+ggplot(plays, aes(x = factor(isDefensivePI), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Defensive Pass Interference") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Defensive Pass Interference") +
+  theme_minimal()
+
+# mean epa by number of pass rushers and defenders in box
+# get mean epa
+mean_epa <- plays %>%
+  group_by(numberOfPassRushers, defendersInTheBox) %>%
+  summarise(mean_epa = mean(epa, na.rm = TRUE))
+ggplot(mean_epa, aes(x = factor(numberOfPassRushers), y = factor(defendersInTheBox), fill = mean_epa)) +
+  geom_tile() +
+  xlab("Number of Pass Rushers") +
+  ylab("Defenders in the Box") +
+  ggtitle("Mean EPA by Pass Rushers and Defenders in the Box") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  theme_minimal()
 ```
