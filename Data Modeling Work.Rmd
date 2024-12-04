@@ -1,0 +1,140 @@
+---
+title: "Data Modeling Work"
+author: "Ty Hammond"
+date: "2024-12-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# import libraries
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("dplyr")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
+if (!requireNamespace("glmnet", quietly = TRUE)) install.packages("glmnet")
+if (!requireNamespace("e1071", quietly = TRUE)) install.packages("e1071")
+if (!requireNamespace("randomForest", quietly = TRUE)) install.packages("randomForest")
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(glmnet)
+library(e1071)
+library(randomForest)
+```
+
+Read in and Clean Data
+
+```{r}
+# read in data
+plays <- read.csv("plays.csv")
+
+# data cleaning
+
+
+# remove all columns that are not predictive
+# also keep only presnap variables
+
+plays_clean <- plays %>%
+  select(quarter, down, yardsToGo, offenseFormation, defendersInTheBox, absoluteYardlineNumber, epa, playResult) %>%
+  mutate(
+    offenseFormation = factor(offenseFormation),
+    playResult = factor(playResult)
+  ) %>%
+  na.omit() # NA's such a small part that imputation not necessary
+```
+
+Split Data
+
+```{r}
+# make it run faster
+plays_sampled <- plays_clean %>% sample_n(10000)
+
+# for reproducability set seed
+set.seed(445)
+
+# 70-30 split
+train_index <- createDataPartition(plays_sampled$epa, p=0.7, list=FALSE)
+train_data <- plays_sampled[train_index, ]
+test_data <- plays_sampled[-train_index, ]
+```
+
+Baseline Models
+
+```{r}
+# just predicting mean and getting baseline MSE
+epa_mean <- mean(train_data$epa)
+baseline_epa_mse <- mean((test_data$epa - epa_mean)^2)
+```
+
+EPA Models
+
+```{r}
+# train control using caret
+tr_ctrl <- trainControl(method="cv", number=5)
+
+# KNN
+epa_knn <- train(epa ~ quarter + down + yardsToGo + offenseFormation + defendersInTheBox + absoluteYardlineNumber,
+                 data=train_data,
+                 method="knn",
+                 trControl=tr_ctrl,
+                 tuneLength=5)
+epa_knn_pred <- predict(epa_knn, newdata=test_data)
+epa_knn_mse <- mean((test_data$epa - epa_knn_pred)^2)
+epa_knn_improvement <- baseline_epa_mse - epa_knn_mse
+
+# SVM
+epa_svm <- train(epa ~ quarter + down + yardsToGo + offenseFormation + defendersInTheBox + absoluteYardlineNumber,
+                 data=train_data,
+                 method="svmRadial",
+                 trControl=tr_ctrl,
+                 tuneLength=3)
+epa_svm_pred <- predict(epa_svm, newdata=test_data)
+epa_svm_mse <- mean((test_data$epa - epa_svm_pred)^2)
+epa_svm_improvement <- baseline_epa_mse - epa_svm_mse
+
+# random forest
+epa_rf <- train(epa ~ quarter + down + yardsToGo + offenseFormation + defendersInTheBox + absoluteYardlineNumber,
+                data=train_data,
+                method="rf",
+                trControl=tr_ctrl,
+                tuneLength=3) # low for speed
+epa_rf_pred <- predict(epa_rf, newdata=test_data)
+epa_rf_mse <- mean((test_data$epa - epa_rf_pred)^2)
+epa_rf_improvement <- baseline_epa_mse - epa_rf_mse
+
+# ridge
+epa_ridge <- train(epa ~ quarter + down + yardsToGo + offenseFormation + defendersInTheBox + absoluteYardlineNumber,
+                   data=train_data,
+                   method="glmnet",
+                   trControl=tr_ctrl,
+                   tuneGrid=expand.grid(alpha=0, lambda=seq(0.001,0.1,by=0.01)))
+epa_ridge_pred <- predict(epa_ridge, newdata=test_data)
+epa_ridge_mse <- mean((test_data$epa - epa_ridge_pred)^2)
+epa_ridge_improvement <- baseline_epa_mse - epa_ridge_mse
+
+# lasso
+epa_lasso <- train(epa ~ quarter + down + yardsToGo + offenseFormation + defendersInTheBox + absoluteYardlineNumber,
+                   data=train_data,
+                   method="glmnet",
+                   trControl=tr_ctrl,
+                   tuneGrid=expand.grid(alpha=1, lambda=seq(0.001,0.1,by=0.01)))
+epa_lasso_pred <- predict(epa_lasso, newdata=test_data)
+epa_lasso_mse <- mean((test_data$epa - epa_lasso_pred)^2)
+epa_lasso_improvement <- baseline_epa_mse - epa_lasso_mse
+
+
+# Results
+epa_results <- data.frame(
+  Model = c("KNN","SVM","RF","Ridge","Lasso"),
+  MSE = c(epa_knn_mse, epa_svm_mse, epa_rf_mse, epa_ridge_mse, epa_lasso_mse),
+  Improvement = c(epa_knn_improvement, epa_svm_improvement, epa_rf_improvement, epa_ridge_improvement, epa_lasso_improvement)
+)
+print(epa_results)
+```
+
+Very Minimal improvement
