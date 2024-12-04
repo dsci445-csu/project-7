@@ -10,29 +10,33 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Motivation and Design
 
--   **Main Point:** Understanding how defensive strategies impact NFL play outcomes.
+**Main Point:** Understanding how defensive strategies impact NFL play outcomes.
 
-    -   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
+-   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
 
-    -   **Significance:**
+-   **Significance:**
 
-        -   Helps coaches balance between rushing and coverage plays.
+    -   Helps coaches balance between rushing and coverage plays.
 
-        -   Guides decisions on optimizing defensive play-calling.
+    -   Guides decisions on optimizing defensive play-calling.
 
-        -   Example:
+    -   Example:
 
-            -   More pass rushers = quarterback pressure but open downfield.
+        -   More pass rushers = quarterback pressure but open downfield.
 
-            -   Fewer rushers = time for quarterback but vulnerable coverage gaps.
+        -   Fewer rushers = time for quarterback but vulnerable coverage gaps.
 
-    -   **Inspiration:**
+-   **Inspiration:**
 
-        -   Shared passion for football and analytics.
+    -   Shared passion for football and analytics.
 
-        -   Contribute to the growing field of sports analytics.Methodology
+    -   Contribute to the growing field of sports analytics.Methodology
 
-<!-- -->
+## EDA
+
+## Data Quality
+
+![](Data Quality 445.png)
 
 ## Methodology
 
