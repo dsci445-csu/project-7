@@ -74,11 +74,7 @@ knitr::opts_chunk$set(echo = FALSE)
     -   Both models highlight the complexity of predicting play outcomes.\
     -   Weak predictor relationships suggest the need for additional variables or advanced modeling approaches.
 
-## Included Plots
-
-```{r pressure}
-plot(pressure)
-```
+## Model Plots
 
 ## Conclusion
 
