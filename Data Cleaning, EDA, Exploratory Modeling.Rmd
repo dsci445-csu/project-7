@@ -234,9 +234,9 @@ xgb <- xgboost(
 xgb_predict <- predict(xgb, test_x)
 
 xgb_mse <- mean((test_y - xgb_predict)^2)
-xgb_rmse <- sqrt(mse)
+xgb_rmse <- sqrt(xgb_mse)
 
-rmse
+xgb_rmse
 importance <- xgb.importance(feature_names = predictors, model = xgb)
 xgb.plot.importance(importance)
 ```
@@ -257,4 +257,25 @@ pdp_defenders <- partial(xgb_model, pred.var = "defendersInTheBox", train = trai
 
 plot(pdp_defenders)
 ##Still Debugging, shows how feature affects target holding other variables constant 
+```
+
+```{r}
+library(e1071)  
+library(caret)  
+
+svm_model <- svm(playResult ~ defendersInTheBox, 
+                 data = train_data, 
+                 type = "eps-regression",  
+                 kernel = "radial")       
+
+predictions <- predict(svm_model, newdata = test_data)
+
+if (is.numeric(test_data$playResult)) {
+  rmse <- sqrt(mean((predictions - test_data$playResult)^2))
+  cat("RMSE:", rmse, "\n")
+} else {
+  confusion <- confusionMatrix(as.factor(predictions), as.factor(test_data$playResult))
+  print(confusion)
+}
+
 ```
