@@ -8,16 +8,52 @@ output: ioslides_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-
-
-
 ## Motivation and Design
 
-- Research Question 
-- Specific Focus
-- Motivation
+-   **Main Point:** Understanding how defensive strategies impact NFL play outcomes.
 
-## Results 
+    -   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
+
+    -   **Significance:**
+
+        -   Helps coaches balance between rushing and coverage plays.
+
+        -   Guides decisions on optimizing defensive play-calling.
+
+        -   Example:
+
+            -   More pass rushers = quarterback pressure but open downfield.
+
+            -   Fewer rushers = time for quarterback but vulnerable coverage gaps.
+
+    -   **Inspiration:**
+
+        -   Shared passion for football and analytics.
+
+        -   Contribute to the growing field of sports analytics.Methodology
+
+```{=html}
+<!-- -->
+```
+
+## Methodology 
+-   Data Preparation:
+
+    -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
+
+    -   Visual tools: boxplots, heatmaps, correlation matrix. Pass rushers showed slightly stronger correlation with play result (0.032) than defenders in the box (0.006).
+
+    -   
+
+-   Modeling:
+
+    -   Linear Regression: Captures direct linear relationships.
+
+    -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
+
+    -    Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
+
+    -   Metrics: RMSE, MAE, and R-squared. \## Results
 
 ```{r cars, echo = TRUE}
 summary(cars)
@@ -29,6 +65,4 @@ summary(cars)
 plot(pressure)
 ```
 
-## Conclusion 
-
-
+## Conclusion
