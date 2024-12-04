@@ -159,11 +159,11 @@ cat("GAM RMSE:", gam_rmse, "\n")
 
 ### Secondary Research Question: Can we classify plays (playType) into sacks, completed passes, or interceptions based on the number of defenders in the box, number of pass rushers, and other features?
 
-```{r}
+```{r, echo=FALSE}
 #####  Logistic regression to predict likelihood of a sack
-logistic_model <- glm(I(playType == "sack") ~ defendersInTheBox + numberOfPassRushers + absoluteYardlineNumber + down + yardsToGo, 
-                      family = binomial, data = df)
-summary(logistic_model)
+#logistic_model <- glm(I(playType == "sack") ~ defendersInTheBox + numberOfPassRushers + absoluteYardlineNumber + down + yardsToGo, 
+  #                    family = binomial, data = df)
+#summary(logistic_model)
 
 ```
 
@@ -242,20 +242,20 @@ xgb.plot.importance(importance)
 ```
 
 ```{r}
-library(pdp)
+#library(pdp)
 
-train_data <- data.frame(defendersInTheBox = rnorm(100), 
-                         numberOfPassRushers = rnorm(100), 
-                         playResult = rnorm(100))
+#train_data <- data.frame(defendersInTheBox = rnorm(100), 
+   #                     numberOfPassRushers = rnorm(100), 
+   #                      playResult = rnorm(100))
 
-xgb_model <- xgboost(data = as.matrix(train_data[, c("defendersInTheBox", "numberOfPassRushers")]),
-                     label = train_data$playResult,
-                     nrounds = 100,
-                     objective = "reg:squarederror")
+#xgb_model <- xgboost(data = as.matrix(train_data[, c("defendersInTheBox", "numberOfPassRushers")]),
+             #        label = train_data$playResult,
+             #        nrounds = 100,
+              #       objective = "reg:squarederror")
 
-pdp_defenders <- partial(xgb_model, pred.var = "defendersInTheBox", train = train_data)
+#pdp_defenders <- partial(xgb_model, pred.var = "defendersInTheBox", train = train_data)
 
-plot(pdp_defenders)
+#plot(pdp_defenders)
 ##Still Debugging, shows how feature affects target holding other variables constant 
 ```
 
