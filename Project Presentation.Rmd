@@ -8,9 +8,9 @@ output: ioslides_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## Motivation and Design
+# Motivation and Design
 
-**Main Point:** Understanding how defensive strategies impact NFL play outcomes.
+## Main Point: Understanding how defensive strategies impact NFL play outcomes.
 
 -   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
 
@@ -32,15 +32,15 @@ knitr::opts_chunk$set(echo = FALSE)
 
     -   Contribute to the growing field of sports analytics.Methodology
 
-## EDA
+# EDA
 
 ## Data Quality
 
-![](Data Quality 445.png)
+<img src="Data Quality 445.png" width="700" height="500">
 
-## Methodology
+# Methodology
 
--   **Data Preparation:**
+##-   **Data Preparation:**
 
     -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
 
@@ -56,7 +56,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
     -   Metrics: RMSE, MAE, and R-squared. \## Results
 
-## Results
+# Results
 
 **Main Point:** Defensive predictors have weak explanatory power for play outcomes.
 
