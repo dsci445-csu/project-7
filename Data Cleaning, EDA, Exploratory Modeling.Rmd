@@ -151,17 +151,96 @@ cat("Linear Regression RMSE:", lm_rmse, "\n")
 cat("GAM RMSE:", gam_rmse, "\n")
 ```
 
-1. Both linear regression and GAM explain very little variance in `playResult`, with low R-squared values and high RMSE.  
-2. The number of pass rushers shows a stronger relationship with `playResult`, with GAM indicating non-linearity, while defenders in the box has minimal impact.  
+Model Coefficients (Play Result outcome):
+
+Linear Regression: 
+                    Estimate Std. Error t value Pr(>|t|)    
+(Intercept)          5.78934    0.59994   9.650  < 2e-16 ***
+defendersInTheBox    0.00161    0.08767   0.018 0.985344    
+numberOfPassRushers  0.38050    0.10086   3.773 0.000162 ***
+
+GAM:
+                         edf Ref.df     F  p-value    
+s(defendersInTheBox)   4.436  5.368 4.308 0.000498 ***
+s(numberOfPassRushers) 2.968  3.760 7.828 6.14e-06 ***
+
+
+1. In General, both linear regression and GAM explain very little variance in `playResult`, with low R-squared values and high RMSE:
+Linear Regression RMSE: 9.847673 
+GAM RMSE: 9.834928
+
+2. The number of pass rushers shows a stronger relationship with `playResult` (P-value = 0.000162), compared to defenders in the box (P-value = 0.985).  
+
 3. The GAM slightly outperforms linear regression, but the improvement is not significant.  
  
+ 
+## Visualizing models above
+```{r}
+library(ggplot2)
+library(mgcv)
+library(dplyr)
+
+# Generate predictions for both models
+train_data <- train_data %>%
+  mutate(
+    lm_predictions = predict(lm_model, newdata = train_data),
+    gam_predictions = predict(gam_model, newdata = train_data)
+  )
+
+# Visualization for Linear Regression
+ggplot(train_data, aes(x = defendersInTheBox, y = playResult)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_line(aes(y = lm_predictions), color = "red", size = 1) +
+  labs(
+    title = "Linear Regression Model",
+    x = "Defenders in the Box",
+    y = "Play Result"
+  ) +
+  theme_minimal()
+
+# Visualization for GAM - Defenders in the Box
+plot(gam_model, select = 1, se = TRUE, rug = TRUE, main = "GAM: Effect of Defenders in the Box")
+
+# Visualization for GAM - Number of Pass Rushers
+plot(gam_model, select = 2, se = TRUE, rug = TRUE, main = "GAM: Effect of Number of Pass Rushers")
+
+# Combined Visualization for GAM (Optional)
+gam_predictions <- data.frame(
+  defendersInTheBox = train_data$defendersInTheBox,
+  numberOfPassRushers = train_data$numberOfPassRushers,
+  gam_predictions = train_data$gam_predictions
+)
+
+ggplot(train_data, aes(x = defendersInTheBox, y = playResult)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_line(data = gam_predictions, aes(y = gam_predictions), color = "green", size = 1) +
+  labs(
+    title = "GAM Model",
+    x = "Defenders in the Box",
+    y = "Play Result"
+  ) +
+  theme_minimal()
+
+```
+
 
 
 ### Secondary Research Question: Can we classify plays (playType) into sacks, completed passes, or interceptions based on the number of defenders in the box, number of pass rushers, and other features?
 
 ```{r}
 #####  Logistic regression to predict likelihood of a sack
-logistic_model <- glm(I(playType == "sack") ~ defendersInTheBox + numberOfPassRushers + absoluteYardlineNumber + down + yardsToGo, 
+
+library(dplyr)
+library(tidyverse)
+
+playTypedf <- read.csv("plays.csv")
+
+df <- playTypedf %>%
+  select(playType, defendersInTheBox, numberOfPassRushers, down) %>%
+  drop_na()
+
+
+logistic_model <- glm(I(playType == "sack") ~ numberOfPassRushers + down,
                       family = binomial, data = df)
 summary(logistic_model)
 
