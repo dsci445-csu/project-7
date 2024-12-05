@@ -34,6 +34,17 @@ knitr::opts_chunk$set(echo = FALSE)
 
 <img src="Data Quality 445.png" width="700" height="500"/>
 
+## Methodology
+
+-   Data Preparation
+    -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
+    -   Visual tools: boxplots, heatmaps, correlation matrix. Pass rushers showed slightly stronger correlation with play result (0.032) than defenders in the box (0.006).
+
+-   **Modeling:**
+    -   Linear Regression: Captures direct linear relationships.
+    -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
+    -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
+
 ## Individual Variables
 
 ```{r message=FALSE, warning=FALSE}
@@ -115,16 +126,7 @@ grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
 ```
 
 
-## Methodology
 
--   Data Preparation
-    -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
-    -   Visual tools: boxplots, heatmaps, correlation matrix. Pass rushers showed slightly stronger correlation with play result (0.032) than defenders in the box (0.006).
-
--   **Modeling:**
-    -   Linear Regression: Captures direct linear relationships.
-    -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
-    -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
    
 
 ## Results
@@ -143,6 +145,14 @@ grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
     -   Adjusted R-squared = 0.0014 (slight improvement).\
     -   Significant non-linear relationships for both predictors (p \< 0.001) &Test RMSE: 9.879.
 
+## Gam Model
+<img src="GAMmodelGraph.jpeg" width="700" height="500"/>
+
+
+## Linear Regression Model
+<img src="LMmodelGraph.jpeg" width="700" height="500"/>
+
+
 ## Conclusion
 ## Random Forest Results
 
@@ -155,7 +165,8 @@ grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
 ## XGBoost Results
 
     -Test RMSE: 9.83
-    -Slight improvements could be the result of less overfitting and presence of        interactions between features
+    -Slight improvements could be the result of less overfitting and presence of        
+    interactions between features
 
 IMPORT GRAPH  
 
