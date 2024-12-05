@@ -34,14 +34,13 @@ knitr::opts_chunk$set(echo = FALSE)
 
 <img src="Data Quality 445.png" width="700" height="500"/>
 
-## EDA Heatmap
-<img src="heatmap.jpeg" width="700" height="500"/>
-
 ## Individual Variables
 
-```{r warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
 if (!requireNamespace("gridExtra", quietly = TRUE)) install.packages("gridExtra")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+library(dplyr)
 library(ggplot2)
 library(gridExtra)
 
@@ -61,8 +60,60 @@ plot2 <- ggplot(plays, aes(x = numberOfPassRushers)) +
   ggtitle("Distribution of Pass Rushers") +
   theme_minimal()
 
-grid.arrange(plot1, plot2, ncol = 2)
+plot3 <- ggplot(plays, aes(x = offensePlayResult)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  xlab("Offensive Play Result (Yards)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Offensive Play Results") +
+  theme_minimal()
+
+plot4 <- ggplot(plays, aes(x = epa)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  xlab("Expected Points Added (EPA)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of EPA") +
+  theme_minimal()
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 ```
+
+## Combinations
+
+```{r message=FALSE, warning=FALSE}
+plot5 <- ggplot(plays, aes(x = factor(numberOfPassRushers), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Number of Pass Rushers") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Number of Pass Rushers") +
+  theme_minimal()
+
+plot6 <- ggplot(plays, aes(x = factor(down), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Down") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Down") +
+  theme_minimal()
+
+counts <- plays %>%
+  group_by(numberOfPassRushers, defendersInTheBox) %>%
+  summarise(Count = n())
+plot7 <- ggplot(counts, aes(x = factor(numberOfPassRushers), y = factor(defendersInTheBox), fill = Count)) +
+  geom_tile() +
+  xlab("Number of Pass Rushers") +
+  ylab("Defenders in the Box") +
+  ggtitle("Counts Heatmap") +
+  scale_fill_gradient(low = "white", high = "red")
+
+plot8 <- ggplot(plays, aes(x = factor(defendersInTheBox), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Defenders in the Box") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Defenders in the Box") +
+  theme_minimal()
+
+grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
+```
+
 
 ## Methodology
 
@@ -93,6 +144,24 @@ grid.arrange(plot1, plot2, ncol = 2)
     -   Significant non-linear relationships for both predictors (p \< 0.001) &Test RMSE: 9.879.
 
 ## Conclusion
+## Random Forest Results
+
+    - The random forest was only able to accurately predict the relationship on
+    playResult from defendersInTheBox and numberOfPassRushers with an accuracy
+    of 4.53%
+    - However, numberOfPassRushers had an importance score of 6791 and defenders
+    in the box had importance score of 4881.880
+   
+## XGBoost Results
+
+    -Test RMSE: 9.83
+    -Slight improvements could be the result of less overfitting and presence of        interactions between features
+
+IMPORT GRAPH  
+
+    -Number of Pass Rushers had importance of 0.4
+    while Defenders in the Box had importance of 0.6
+    -Average cover of splits that use these features 
 
 ## References
 
