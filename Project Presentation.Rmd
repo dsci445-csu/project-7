@@ -34,6 +34,9 @@ knitr::opts_chunk$set(echo = FALSE)
 
 <img src="Data Quality 445.png" width="700" height="500"/>
 
+## EDA Heatmap
+<img src="heatmap.jpeg" width="700" height="500"/>
+
 ## Individual Variables
 
 ```{r warning=FALSE}
@@ -64,20 +67,14 @@ grid.arrange(plot1, plot2, ncol = 2)
 ## Methodology
 
 -   Data Preparation
-
     -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
-
     -   Visual tools: boxplots, heatmaps, correlation matrix. Pass rushers showed slightly stronger correlation with play result (0.032) than defenders in the box (0.006).
 
 -   **Modeling:**
-
     -   Linear Regression: Captures direct linear relationships.
-
     -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
-
     -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
-
-    -   Metrics: RMSE, MAE, and R-squared.
+   
 
 ## Results
 
@@ -107,4 +104,3 @@ Kaplan, Andee. Regression, Class Notes. PDF File. 2024. <https://dsci445-csu.git
 
 Kaplan, Andee. Classification, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/4_classification/20240919_4_classification.pdf>
 
-Kaplan, Andee. Regularization, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/6_regularization/20241015_6_regularization.pdf>
