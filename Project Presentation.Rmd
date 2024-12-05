@@ -34,6 +34,33 @@ knitr::opts_chunk$set(echo = FALSE)
 
 <img src="Data Quality 445.png" width="700" height="500"/>
 
+## Individual Variables
+
+```{r warning=FALSE}
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("gridExtra", quietly = TRUE)) install.packages("gridExtra")
+library(ggplot2)
+library(gridExtra)
+
+plays <- read.csv("plays.csv")
+
+plot1 <- ggplot(plays, aes(x = defendersInTheBox)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Defenders in the Box") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Defenders in the Box") +
+  theme_minimal()
+
+plot2 <- ggplot(plays, aes(x = numberOfPassRushers)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Number of Pass Rushers") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Pass Rushers") +
+  theme_minimal()
+
+grid.arrange(plot1, plot2, ncol = 2)
+```
+
 ## Methodology
 
 -   Data Preparation
