@@ -1,7 +1,9 @@
 ---
 title: "NFL Big Data Bowl 2021"
 author: "Ty Hammond, Blake Hammarstrom, Jaret Stickrod, and Luke Spencer"
-output: ioslides_presentation
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -79,5 +81,3 @@ Kaplan, Andee. Regression, Class Notes. PDF File. 2024. <https://dsci445-csu.git
 Kaplan, Andee. Classification, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/4_classification/20240919_4_classification.pdf>
 
 Kaplan, Andee. Regularization, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/6_regularization/20241015_6_regularization.pdf>
-
-Kaplan, Andee. Nonlinear, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/7_nonlinear/20241029_7_nonlinear.pdf>
