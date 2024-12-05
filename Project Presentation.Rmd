@@ -8,8 +8,8 @@ output: ioslides_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-
 ## Motivation and Design
+
 **Main Point:** Understanding how defensive strategies impact NFL play outcomes.
 
 -   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
@@ -29,12 +29,12 @@ knitr::opts_chunk$set(echo = FALSE)
 # EDA
 
 ## Data Quality
-<img src="Data Quality 445.png" width="700" height="500">
 
+<img src="Data Quality 445.png" width="700" height="500"/>
 
-# Methodology
+## Methodology
 
-## Data Preparation:
+-   Data Preparation
 
     -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
 
@@ -48,11 +48,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
     -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
 
-    -   Metrics: RMSE, MAE, and R-squared. \## Results
+    -   Metrics: RMSE, MAE, and R-squared.
 
-# Results
+## Results
 
-## Main Point: Defensive predictors have weak explanatory power for play outcomes.
+**Main Point:** Defensive predictors have weak explanatory power for play outcomes.
 
 -   **Linear Regression:**
 
@@ -70,9 +70,7 @@ knitr::opts_chunk$set(echo = FALSE)
 -   **Key Takeaway:**
 
     -   Both models highlight the complexity of predicting play outcomes.\
-    -   Weak predictor relationships suggest the need for additional variables or advanced modeling approaches.
-
-## Model Plots
+    -   Weak predictor relationships suggest the need for additional variables \## Model Plots
 
 ## Conclusion
 
