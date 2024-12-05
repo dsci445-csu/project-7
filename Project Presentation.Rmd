@@ -64,13 +64,7 @@ knitr::opts_chunk$set(echo = FALSE)
 -   **GAM Results:**
 
     -   Adjusted R-squared = 0.0014 (slight improvement).\
-    -   Significant non-linear relationships for both predictors (p \< 0.001).\
-    -   Test RMSE: 9.879.
-
--   **Key Takeaway:**
-
-    -   Both models highlight the complexity of predicting play outcomes.\
-    -   Weak predictor relationships suggest the need for additional variables \## Model Plots
+    -   Significant non-linear relationships for both predictors (p \< 0.001) &Test RMSE: 9.879.
 
 ## Conclusion
 
