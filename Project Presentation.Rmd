@@ -131,19 +131,14 @@ grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
 
 ## Results
 
-**Main Point:** Defensive predictors have weak explanatory power for play outcomes.
 
--   **Linear Regression:**
+1. In General, both linear regression and GAM explain very little variance in playResult, with low R-squared values and high RMSE:
+Linear Regression RMSE: 9.847673 
+GAM RMSE: 9.834928
 
-    -   Adjusted R-squared = 0.0005 (predictors explain 0.05% variance).
+2. The number of pass rushers shows a stronger relationship with playResult (Estimate coefficient = 0.381, P-value = 0.000162), compared to defenders in the box (P-value = 0.985).  
 
-    -   Significant predictor: Pass rushers (estimate = 0.30, p = 0.002).\
-        Test RMSE: 9.892.
-
--   **GAM Results:**
-
-    -   Adjusted R-squared = 0.0014 (slight improvement).\
-    -   Significant non-linear relationships for both predictors (p \< 0.001) &Test RMSE: 9.879.
+3. The GAM slightly outperforms linear regression, but the improvement is not significant.  
 
 ## Gam Model
 <img src="GAMmodelGraph.jpeg" width="700" height="500"/>
