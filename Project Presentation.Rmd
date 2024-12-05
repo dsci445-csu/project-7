@@ -28,11 +28,6 @@ knitr::opts_chunk$set(echo = FALSE)
 
     -   Contribute to the growing field of sports analytics.
 
-# EDA
-
-## Data Quality
-
-<img src="Data Quality 445.png" width="700" height="500"/>
 
 ## Methodology
 
@@ -44,6 +39,12 @@ knitr::opts_chunk$set(echo = FALSE)
     -   Linear Regression: Captures direct linear relationships.
     -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
     -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
+
+## Data Quality
+
+<img src="Data Quality 445.png" width="700" height="500"/>
+
+# EDA
 
 ## Individual Variables
 
@@ -126,19 +127,25 @@ grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
 ```
 
 
-
+# Model Results
    
 
 ## Results
 
 
-1. In General, both linear regression and GAM explain very little variance in playResult, with low R-squared values and high RMSE:
-Linear Regression RMSE: 9.847673 
-GAM RMSE: 9.834928
+    -In General, both linear regression and GAM explain very little variance 
+    in playResult, with low R-squared values and high RMSE:
 
-2. The number of pass rushers shows a stronger relationship with playResult (Estimate coefficient = 0.381, P-value = 0.000162), compared to defenders in the box (P-value = 0.985).  
+    - Linear Regression 
+    RMSE: 9.847673 
+    GAM RMSE: 9.834928
 
-3. The GAM slightly outperforms linear regression, but the improvement is not significant.  
+    -The number of pass rushers shows a stronger relationship with playResult
+    (Estimate coefficient = 0.381, P-value = 0.000162), compared to defenders 
+    in the box (P-value = 0.985).  
+
+    -The GAM slightly outperforms linear regression, but the improvement is
+    not significant.  
 
 ## Gam Model
 <img src="GAMmodelGraph.jpeg" width="700" height="500"/>
@@ -147,27 +154,28 @@ GAM RMSE: 9.834928
 ## Linear Regression Model
 <img src="LMmodelGraph.jpeg" width="700" height="500"/>
 
-
-## Conclusion
 ## Random Forest Results
-
+  
     - The random forest was only able to accurately predict the relationship on
     playResult from defendersInTheBox and numberOfPassRushers with an accuracy
     of 4.53%
     - However, numberOfPassRushers had an importance score of 6791 and defenders
     in the box had importance score of 4881.880
+  <img src="Importance.png" width="500" height="350"/>
    
 ## XGBoost Results
 
     -Test RMSE: 9.83
-    -Slight improvements could be the result of less overfitting and presence of        
-    interactions between features
+    -Slight improvements could be the result of less overfitting and 
+    presence of interactions between features
+  <img src="Importance Graphs.png" width="550" height="350"/>
 
-IMPORT GRAPH  
+## Predicting EPA With Pre-snap Variables
 
-    -Number of Pass Rushers had importance of 0.4
-    while Defenders in the Box had importance of 0.6
-    -Average cover of splits that use these features 
+    -Variables used quarter, down, yards to go, offensive formation, 
+    defenders in the box, and absolute yard number.
+    
+  <img src="EPA Prediction Results.png" width="750" height="400"/>
 
 ## References
 
