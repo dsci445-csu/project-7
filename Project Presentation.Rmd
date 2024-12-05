@@ -8,61 +8,93 @@ output: ioslides_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+<<<<<<< HEAD
 ## Motivation and Design
+**Main Point:** Understanding how defensive strategies impact NFL play outcomes.
+=======
+# Motivation and Design
 
--   **Main Point:** Understanding how defensive strategies impact NFL play outcomes.
+## Main Point: Understanding how defensive strategies impact NFL play outcomes.
+>>>>>>> 8a2227ee54f4deb4b6b06f5aa868d3c841cc1475
 
-    -   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
+-   **Focus:** Investigate if more defenders in the box reduce offensive yards gained.
 
-    -   **Significance:**
+-   **Significance:**
 
-        -   Helps coaches balance between rushing and coverage plays.
+    -   Helps coaches balance between rushing and coverage plays.
 
-        -   Guides decisions on optimizing defensive play-calling.
+    -   Guides decisions on optimizing defensive play-calling.
 
-        -   Example:
+-   **Inspiration:**
 
-            -   More pass rushers = quarterback pressure but open downfield.
+    -   Shared passion for football and analytics.
 
-            -   Fewer rushers = time for quarterback but vulnerable coverage gaps.
+    -   Contribute to the growing field of sports analytics.
 
-    -   **Inspiration:**
+# EDA
 
-        -   Shared passion for football and analytics.
+## Data Quality
 
-        -   Contribute to the growing field of sports analytics.Methodology
+<<<<<<< HEAD
+![](Data%20Quality%20445.png)
+=======
+<img src="Data Quality 445.png" width="700" height="500">
+>>>>>>> 8a2227ee54f4deb4b6b06f5aa868d3c841cc1475
 
-```{=html}
-<!-- -->
-```
+# Methodology
 
-## Methodology 
--   Data Preparation:
+##-   **Data Preparation:**
 
     -   Filtered passing plays; cleaned data to 17,330 observations. Response variable: offensive yards gained (excluding penalties). Predictors: number of defenders in the box and pass rushers. Exploratory Data Analysis (EDA):
 
     -   Visual tools: boxplots, heatmaps, correlation matrix. Pass rushers showed slightly stronger correlation with play result (0.032) than defenders in the box (0.006).
 
-    -   
-
--   Modeling:
+-   **Modeling:**
 
     -   Linear Regression: Captures direct linear relationships.
 
     -   Generalized Additive Model (GAM): Accounts for non-linear relationships with smooth terms.
 
-    -    Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
+    -   Train-test split (80/20) and 5-fold cross-validation for performance evaluation.
 
     -   Metrics: RMSE, MAE, and R-squared. \## Results
 
-```{r cars, echo = TRUE}
-summary(cars)
-```
+# Results
 
-## Included Plots
+**Main Point:** Defensive predictors have weak explanatory power for play outcomes.
 
-```{r pressure}
-plot(pressure)
-```
+-   **Linear Regression:**
+
+    -   Adjusted R-squared = 0.0005 (predictors explain 0.05% variance).
+
+    -   Significant predictor: Pass rushers (estimate = 0.30, p = 0.002).\
+        Test RMSE: 9.892.
+
+-   **GAM Results:**
+
+    -   Adjusted R-squared = 0.0014 (slight improvement).\
+    -   Significant non-linear relationships for both predictors (p \< 0.001).\
+    -   Test RMSE: 9.879.
+
+-   **Key Takeaway:**
+
+    -   Both models highlight the complexity of predicting play outcomes.\
+    -   Weak predictor relationships suggest the need for additional variables or advanced modeling approaches.
+
+## Model Plots
 
 ## Conclusion
+
+## References
+
+The National Football League. 2021. NFL Big Data Bowl 2021. Retrieved Oct 29, 2024, from <https://www.kaggle.com/competitions/nfl-big-data-bowl-2021/data>
+
+Kaplan, Andee. Statistical Learning, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/2_stat_learning/20240829_2_stat_learning.pdf>
+
+Kaplan, Andee. Regression, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/3_regression/20240910_3_regression.pdf>
+
+Kaplan, Andee. Classification, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/4_classification/20240919_4_classification.pdf>
+
+Kaplan, Andee. Regularization, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/6_regularization/20241015_6_regularization.pdf>
+
+Kaplan, Andee. Nonlinear, Class Notes. PDF File. 2024. <https://dsci445-csu.github.io/notes/7_nonlinear/20241029_7_nonlinear.pdf>
