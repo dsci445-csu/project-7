@@ -41,11 +41,90 @@ Our motivation for this project comes from a passion for analytics and football.
 
 ## Methodology
 
-The first part of this study investigates the relationship between the number of defenders in the box, the number of pass rushers, and the outcome of a play. This analysis focused exclusively on passing plays, which were filtered from the dataset to ensure consistency in play type and to help minimize the size of the data. The play result response variable is the yards gained by the offense, excluding penalty yardage. Variables in interest were used in their original form and in binned formats to investigate potential categorical effects. The dataset was further cleaned by removing missing observations for the selected variables, resulting in a final dataset with 17,330 observations. Exploratory data analysis (EDA) was conducted using visualizations, including boxplots, heatmaps, and a correlation matrix to assess the relationships between the predictors and play results. These analyses provided insights into the associations between play results and the predictors, with the number of pass rushers showing a slightly stronger correlation (0.032) compared to defenders in the box (0.006).  Both linear regression and generalized additive models (GAMs) were used to model the relationship between the predictors and the response variable. The linear regression model assumed a direct linear relationship, while the GAM accounted for potential non-linearities by incorporating smooth terms for the predictors. The dataset was split into training (80%) and test (20%) sets to evaluate model performance and five-fold cross-validation was used to assess the generalizability of the models on the training data. Performance metrics, including root mean square error (RMSE), mean absolute error (MAE), and R-squared, were calculated for both cross-validation and test set evaluations.
+The first part of this study was doing our exploratory data analysis (EDA). Within this we wanted to focus on three different main aspects. First we want to assess the overall data quality of the "plays.csv" file that we retrieved from Kaggle. We wanted to find the unique value counts, counts and proportions of NAs, and data types for all variables. After assessing all of these aspects we determined that there was no imputation necessary as even the variables with the highest proportion of NAs had below a 0.05% rate. Instead we would just drop the NAs rows. The other aspects of our data quality exploration all showed that we had a quality data set and minimal data cleaning was necessary. The next step of EDA was to look at individual variables that could be important to our analysis. We did this with many variables but four important ones cans be seen visually here:
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("gridExtra", quietly = TRUE)) install.packages("gridExtra")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+
+plays <- read.csv("plays.csv")
+
+plot1 <- ggplot(plays, aes(x = defendersInTheBox)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Defenders in the Box") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Defenders in the Box") +
+  theme_minimal()
+
+plot2 <- ggplot(plays, aes(x = numberOfPassRushers)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black") +
+  xlab("Number of Pass Rushers") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Pass Rushers") +
+  theme_minimal()
+
+plot3 <- ggplot(plays, aes(x = offensePlayResult)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  xlab("Offensive Play Result (Yards)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of Offensive Play Results") +
+  theme_minimal()
+
+plot4 <- ggplot(plays, aes(x = epa)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  xlab("Expected Points Added (EPA)") +
+  ylab("Frequency") +
+  ggtitle("Distribution of EPA") +
+  theme_minimal()
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
+```
+The last the final aspect of our EDA was looking at combinations of variables. This was primarily focused on our research question and again we made many different visualizations such as the four below.
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+plot5 <- ggplot(plays, aes(x = factor(numberOfPassRushers), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("# of Pass Rushers") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by # of Pass Rushers") +
+  theme_minimal()
+
+plot6 <- ggplot(plays, aes(x = factor(down), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Down") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Play Result by Down") +
+  theme_minimal()
+
+counts <- plays %>%
+  group_by(numberOfPassRushers, defendersInTheBox) %>%
+  summarise(Count = n())
+plot7 <- ggplot(counts, aes(x = factor(numberOfPassRushers), y = factor(defendersInTheBox), fill = Count)) +
+  geom_tile() +
+  xlab("Number of Pass Rushers") +
+  ylab("Defenders in the Box") +
+  ggtitle("Counts Heatmap") +
+  scale_fill_gradient(low = "white", high = "red")
+
+plot8 <- ggplot(plays, aes(x = factor(defendersInTheBox), y = playResult)) +
+  geom_boxplot(fill = "blue") +
+  xlab("Defenders in the Box") +
+  ylab("Play Result (Yards)") +
+  ggtitle("Result vs Defenders in Box") +
+  theme_minimal()
+
+grid.arrange(plot5, plot6, plot7, plot8, ncol = 2, nrow = 2)
+```
+
+
+These analyses provided insights into the associations between play results and the predictors, with the number of pass rushers showing a slightly stronger correlation (0.032) compared to defenders in the box (0.006).  Both linear regression and generalized additive models (GAMs) were used to model the relationship between the predictors and the response variable. The linear regression model assumed a direct linear relationship, while the GAM accounted for potential non-linearities by incorporating smooth terms for the predictors. The dataset was split into training (80%) and test (20%) sets to evaluate model performance and five-fold cross-validation was used to assess the generalizability of the models on the training data. Performance metrics, including root mean square error (RMSE), mean absolute error (MAE), and R-squared, were calculated for both cross-validation and test set evaluations. We then decided to attempt to predict EPA or expected points added from presnap indicators. We chose EPA as this was seen as the best measure of offensive success. This meant only using the variables quarter, down, yardsToGo, offenseFormation, defendersInTheBox, and absoluteYardlineNumber as our predictors. Using a 70-30 train and test split we attempted to use KNN, radial SVM, random forest, ridge, and lasso modeling techniques. This provided a good all around base to attack the problems from multiple angles. We also slighly shorted our dataset by taking a sample of 10,000 observations. This was done to help the model run faster. We also compared our results against a baseline MSE where we just predicted the mean. Within our models we utilized caret for some train control. Our K-Nearest Neighbors (KNN) model predicts EPA by identifying the k closest observations in the feature space and averaging their EPA values. The Support Vector Machine (SVM) model uses a radial basis function kernel to create a decision boundary, predicting EPA by optimizing the separation of data points. The Random Forest (RF) model aggregates predictions from multiple decision trees, reducing variance and improving prediction accuracy for EPA. The Ridge Regression model applies regularization, penalizing large coefficients to prevent overfitting while predicting EPA. The Lasso Regression model applies regularization as well, encouraging sparsity by setting some coefficients to zero, simplifying the model while predicting EPA.
 
 ## Conclusions & Results
 
-The linear regression model showed small explanatory power, with an adjusted R-squared of 0.0005, indicating the predictors explained only 0.05% of the variance in the play result. Among the predictors, the number of pass rushers was statistically significant (estimate = 0.30, p = 0.002), suggesting a modest positive effect on play outcomes, while the number of defenders in the box was not significant (estimate = -0.044, p = 0.606). The residual standard error was 9.893, and the test set RMSE was 9.892, consistent with cross-validation results. The GAM model provided a slight improvement, with an adjusted R-squared of 0.0014. The smooth terms for the number of pass rushers and defenders in the box were statistically significant (p = <0.001 and p = 0.001, respectively), suggesting non-linear relationships. Cross-validation selected an optimal model with three degrees of freedom, yielding a test set RMSE of 9.879, slightly better than the linear model. Both models indicated weak relationships between the predictors and play result, highlighting the complexity of predicting play outcomes and suggesting the need for new predictors or different modeling approaches. 
+The linear regression model showed small explanatory power, with an adjusted R-squared of 0.0005, indicating the predictors explained only 0.05% of the variance in the play result. Among the predictors, the number of pass rushers was statistically significant (estimate = 0.30, p = 0.002), suggesting a modest positive effect on play outcomes, while the number of defenders in the box was not significant (estimate = -0.044, p = 0.606). The residual standard error was 9.893, and the test set RMSE was 9.892, consistent with cross-validation results. The GAM model provided a slight improvement, with an adjusted R-squared of 0.0014. The smooth terms for the number of pass rushers and defenders in the box were statistically significant (p = <0.001 and p = 0.001, respectively), suggesting non-linear relationships. Cross-validation selected an optimal model with three degrees of freedom, yielding a test set RMSE of 9.879, slightly better than the linear model. Both models indicated weak relationships between the predictors and play result, highlighting the complexity of predicting play outcomes and suggesting the need for new predictors or different modeling approaches. The results from out attempts to predict EPA based on pre-snap prediction variables showed very minimal improvement or even a reduction in MSE from our baseline. After experimenting with different seeds, we came to the conclusion that no model was significant enough to consider an improvement over the baseline. For example using seed 445 we found a -0.003 improvement for KNN, 0.01 improvement for SVM, 0.07 improvement for random forest, and a 0.06 improvement for both lasso and ridge in model MSE vs baseline MSE. This was the expected result as NFL teams have analysts, coordinators, and coach's who design offensive and defensive schemes to be non predictive. If they were predictive then on field adjustments or audibles could be made to give your team the best chance for success.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
