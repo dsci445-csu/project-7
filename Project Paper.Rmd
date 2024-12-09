@@ -47,6 +47,86 @@ The first part of this study investigates the relationship between the number of
 
 The linear regression model showed small explanatory power, with an adjusted R-squared of 0.0005, indicating the predictors explained only 0.05% of the variance in the play result. Among the predictors, the number of pass rushers was statistically significant (estimate = 0.30, p = 0.002), suggesting a modest positive effect on play outcomes, while the number of defenders in the box was not significant (estimate = -0.044, p = 0.606). The residual standard error was 9.893, and the test set RMSE was 9.892, consistent with cross-validation results. The GAM model provided a slight improvement, with an adjusted R-squared of 0.0014. The smooth terms for the number of pass rushers and defenders in the box were statistically significant (p = <0.001 and p = 0.001, respectively), suggesting non-linear relationships. Cross-validation selected an optimal model with three degrees of freedom, yielding a test set RMSE of 9.879, slightly better than the linear model. Both models indicated weak relationships between the predictors and play result, highlighting the complexity of predicting play outcomes and suggesting the need for new predictors or different modeling approaches. 
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+# Install required libraries if not already installed
+if (!requireNamespace("mgcv", quietly = TRUE)) install.packages("mgcv")
+if (!requireNamespace("caret", quietly = TRUE)) install.packages("caret")
+if (!requireNamespace("tidyverse", quietly = TRUE)) install.packages("tidyverse")
+if (!requireNamespace("dplyr", quietly = TRUE)) install.packages("dplyr")
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(mgcv)
+library(dplyr)
+library(caret)
+
+df <- read.csv("plays.csv")
+
+# Filter for passing plays only
+df <- df %>%
+  filter(playType == "play_type_pass") %>%
+  select(playResult, defendersInTheBox, numberOfPassRushers) %>%
+  drop_na()
+
+# Binning the predictors
+df <- df %>%
+  mutate(
+    defendersInTheBox_binned = cut(defendersInTheBox, breaks = seq(4, 8, by = 1)),
+    numberOfPassRushers_binned = cut(numberOfPassRushers, breaks = seq(3, 7, by = 1))
+  )
+
+##### Splitting the Data
+set.seed(445)  # reproducibility
+train_index <- createDataPartition(df$playResult, p = 0.8, list = FALSE)
+train_data <- df[train_index, ]
+test_data <- df[-train_index, ]
+
+# Linear Regression
+lm_model <- lm(playResult ~ defendersInTheBox + numberOfPassRushers, data = train_data)
+
+# Generalized Additive Model (GAM)
+gam_model <- gam(playResult ~ s(defendersInTheBox) + s(numberOfPassRushers), data = train_data)
+
+
+# Generate predictions for both models
+train_data <- train_data %>%
+  mutate(
+    lm_predictions = predict(lm_model, newdata = train_data),
+    gam_predictions = predict(gam_model, newdata = train_data)
+  )
+
+# Visualization for Linear Regression
+ggplot(train_data, aes(x = defendersInTheBox, y = playResult)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_line(aes(y = lm_predictions), color = "red", size = 1) +
+  labs(
+    title = "Linear Regression Model",
+    x = "Defenders in the Box",
+    y = "Play Result"
+  ) +
+  theme_minimal()
+
+# Combined Visualization for GAM (Optional)
+gam_predictions <- data.frame(
+  defendersInTheBox = train_data$defendersInTheBox,
+  numberOfPassRushers = train_data$numberOfPassRushers,
+  gam_predictions = train_data$gam_predictions
+)
+
+ggplot(train_data, aes(x = defendersInTheBox, y = playResult)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_line(data = gam_predictions, aes(y = gam_predictions), color = "green", size = 1) +
+  labs(
+    title = "GAM Model",
+    x = "Defenders in the Box",
+    y = "Play Result"
+  ) +
+  theme_minimal()
+```
+
 ## References
 
 The National Football League. 2021. NFL Big Data Bowl 2021. Retrieved Oct 29, 2024, from https://www.kaggle.com/competitions/nfl-big-data-bowl-2021/data
