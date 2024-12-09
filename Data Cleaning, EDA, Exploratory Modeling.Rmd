@@ -229,7 +229,6 @@ ggplot(train_data, aes(x = defendersInTheBox, y = playResult)) +
 
 ```{r, echo=FALSE}
 #####  Logistic regression to predict likelihood of a sack
-<<<<<<< HEAD
 
 library(dplyr)
 library(tidyverse)
@@ -244,11 +243,10 @@ df <- playTypedf %>%
 logistic_model <- glm(I(playType == "sack") ~ numberOfPassRushers + down,
                       family = binomial, data = df)
 summary(logistic_model)
-=======
+
 #logistic_model <- glm(I(playType == "sack") ~ defendersInTheBox + numberOfPassRushers + absoluteYardlineNumber + down + yardsToGo, 
   #                    family = binomial, data = df)
 #summary(logistic_model)
->>>>>>> 21a2bb67f60130bbbe5510a7cb5ae9af8c6e359a
 
 ```
 
