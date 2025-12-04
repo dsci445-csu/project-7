@@ -5,11 +5,9 @@ output: html_document
 ---
 
 ## Introduction
-
 The highest level of motorsport is Formula 1, a complex network where driver skill, engineering capability, and strategic thinking come together. Any Grand Prix's results are chaotic, influenced by a wide range of factors, which means predicting race outcomes is a difficult yet interesting analytical task. Our goal for this project is to create a prediction model in R to identify the main variables influencing a driver's finishing place. 
 
 ## Data 
-
 This dataset is organized into several CSV files, each describing a particular aspect of the sport. To understand the variables, here is a list of the project's main data sources, which we will use. 
 
 Data Summary: 
@@ -27,7 +25,6 @@ circuits.csv - Provides information about each race circuit, including its locat
 status.csv - Defines the various finishing statuses (Finished, Accident).  
 
 ## Methods
-
 Our process will include:
 
 1. Cleaning and merging the data in R  
@@ -36,5 +33,4 @@ Our process will include:
 4. Comparing model performance and accuracy  
 
 ## Conclusion
-
-This project will help us understand which factors influence Formula 1 race outcomes and how well these variables can be used to predict race results.
+The goal of this project is to provide a data-driven look at the variables that influence Formula 1 success. We want to identify the factors that have the greatest impact on race outcomes through developing and evaluating predictive models in R. The results will show how to apply machine learning techniques to a real-world problem. In order to improve the predicted accuracy, we will also be exploring more advanced modeling algorithms, such as gradient boosting. 
