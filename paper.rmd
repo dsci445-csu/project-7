@@ -1,0 +1,43 @@
+---
+title: "Predicting Formula 1 Race Outcomes in R"
+author: "Rohan, Timur, Sanjay, Luke"
+output: html_document
+---
+
+## Introduction
+
+We are using the Formula 1 World Championship dataset from Kaggle (1950–2020) to predict race outcomes.  
+Our goal is to build a model in R to determine which factors help predict how drivers will finish.
+
+## Data
+
+The dataset includes information on:
+
+- Drivers  
+- Teams  
+- Races  
+- Results  
+- Lap times  
+- Pit stops  
+- Qualifying sessions  
+
+We plan to use features such as:
+
+- Grid position  
+- Lap times  
+- Pit stops  
+- Driver history  
+- Constructor (team) performance  
+
+## Methods
+
+Our process will include:
+
+1. Cleaning and merging the data in R  
+2. Creating features such as average lap time, pit stop counts, team strength, and qualifying times  
+3. Testing models such as ridge regression, LASSO, and logistic regression  
+4. Comparing model performance and accuracy  
+
+## Conclusion
+
+This project will help us understand which factors influence Formula 1 race outcomes and how well these variables can be used to predict race results.
