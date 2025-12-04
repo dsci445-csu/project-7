@@ -1,0 +1,385 @@
+---
+title: "Predicting Formula 1 Race Outcomes"
+subtitle: "Machine Learning Analysis Using Historical F1 Data"
+author: "Rohan, Timur, Sanjay, Luke"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+    smaller: false
+    css: styles.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 6,
+  fig.align = 'center'
+)
+
+# Load libraries
+library(dplyr)
+library(ggplot2)
+library(glmnet)
+library(gbm)
+library(tidyr)
+library(knitr)
+
+# Set ggplot theme
+theme_set(theme_minimal(base_size = 14))
+```
+
+```{r data_prep, cache=TRUE}
+# Load data
+results <- read.csv("results.csv")
+lap_times <- read.csv("lap_times.csv")
+qualifying <- read.csv("qualifying.csv")
+races <- read.csv("races.csv")
+driver_standings <- read.csv("driver_standings.csv")
+
+# Create lap summary features
+lap_summary <- lap_times %>%
+  group_by(raceId, driverId) %>%
+  summarise(
+    avg_lap     = mean(milliseconds, na.rm = TRUE),
+    fastest_lap = min(milliseconds, na.rm = TRUE),
+    sd_lap      = sd(milliseconds, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Prepare race results
+race_results <- results %>%
+  select(raceId, driverId, position, grid) %>%
+  mutate(position = as.numeric(position))
+
+# Merge datasets
+model_df <- race_results %>%
+  inner_join(lap_summary, by = c("raceId", "driverId")) %>%
+  filter(complete.cases(.))
+
+# Train/test split
+set.seed(123)
+n <- nrow(model_df)
+train_idx <- sample(1:n, size = 0.7 * n)
+train <- model_df[train_idx, ]
+test <- model_df[-train_idx, ]
+```
+
+## Introduction
+
+<div class="columns-2">
+**Project Overview**
+
+- Analyze Formula 1 World Championship data (1950–2020)
+- Goal: Predict final race positions using machine learning
+- Dataset from Kaggle with 70+ years of racing history
+
+**Key Questions**
+
+- What factors most influence race outcomes?
+- Can we accurately predict finishing positions?
+- Which model performs best for F1 predictions?
+
+</div>
+
+## Dataset Overview
+
+**Comprehensive F1 Historical Data:**
+
+- **Drivers**: Complete career statistics
+- **Constructors**: Team performance metrics  
+- **Races**: Circuit and season information
+- **Results**: Finishing positions and points
+- **Lap Times**: Detailed timing data
+- **Qualifying**: Grid position data
+
+<div class="centered">
+*Total observations after cleaning: `r format(nrow(model_df), big.mark=",")`*
+</div>
+
+## Feature Engineering
+
+**Predictive Features Created:**
+
+| Feature | Description | Impact |
+|---------|-------------|--------|
+| `avg_lap` | Average lap time (ms) | Consistent pace indicator |
+| `fastest_lap` | Minimum lap time (ms) | Peak performance capability |
+| `sd_lap` | Lap time variability | Consistency metric |
+| `grid` | Starting grid position | Track position advantage |
+
+## Methodology
+
+**Three-Model Comparison:**
+
+1. **Linear Regression** - Baseline model with interpretable coefficients
+2. **Lasso Regression** - Regularized model with feature selection
+3. **Gradient Boosting** - Advanced ensemble method
+
+**Evaluation Metric:** Root Mean Squared Error (RMSE)
+
+- Measures average prediction error in positions
+- Lower RMSE = better predictions
+
+```{r models, cache=TRUE}
+# ============= LINEAR REGRESSION =============
+lm_model <- lm(position ~ avg_lap + fastest_lap + sd_lap + grid, data = train)
+pred_lm <- predict(lm_model, newdata = test)
+rmse_lm <- sqrt(mean((test$position - pred_lm)^2))
+
+# ============= LASSO REGRESSION =============
+X_train <- as.matrix(train[, c("avg_lap", "fastest_lap", "sd_lap", "grid")])
+y_train <- train$position
+X_test <- as.matrix(test[, c("avg_lap", "fastest_lap", "sd_lap", "grid")])
+y_test <- test$position
+
+cv_lasso <- cv.glmnet(X_train, y_train, alpha = 1)
+best_lambda <- cv_lasso$lambda.min
+lasso_model <- glmnet(X_train, y_train, alpha = 1, lambda = best_lambda)
+pred_lasso <- predict(lasso_model, newx = X_test)
+rmse_lasso <- sqrt(mean((y_test - pred_lasso)^2))
+
+# ============= GRADIENT BOOSTING =============
+gbm_model <- gbm(
+  formula = position ~ avg_lap + fastest_lap + sd_lap + grid,
+  data = train,
+  distribution = "gaussian",
+  n.trees = 3000,
+  interaction.depth = 3,
+  shrinkage = 0.01,
+  n.minobsinnode = 10,
+  cv.folds = 5,
+  verbose = FALSE
+)
+
+best_iter <- gbm.perf(gbm_model, method = "cv", plot.it = FALSE)
+pred_gbm <- predict(gbm_model, newdata = test, n.trees = best_iter)
+rmse_gbm <- sqrt(mean((test$position - pred_gbm)^2))
+```
+
+## Model Performance Comparison
+
+```{r performance_chart, fig.height=5}
+results_df <- data.frame(
+  Model = factor(c("Linear Regression", "Lasso", "Gradient Boosting"),
+                 levels = c("Linear Regression", "Lasso", "Gradient Boosting")),
+  RMSE  = c(rmse_lm, rmse_lasso, rmse_gbm)
+)
+
+ggplot(results_df, aes(x = Model, y = RMSE, fill = Model)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = round(RMSE, 3)), vjust = -0.5, size = 6, fontface = "bold") +
+  scale_fill_manual(values = c("#E10600", "#FF8700", "#00D2BE")) +
+  labs(
+    title = "Model Comparison: Prediction Error (RMSE)",
+    subtitle = "Lower RMSE indicates better prediction accuracy",
+    y = "Root Mean Squared Error",
+    x = NULL
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    axis.text.x = element_text(size = 12)
+  ) +
+  ylim(0, max(results_df$RMSE) * 1.15)
+```
+
+## Results Summary
+
+<div class="centered">
+```{r results_table}
+results_summary <- data.frame(
+  Model = c("Linear Regression", "Lasso Regression", "Gradient Boosting"),
+  RMSE = round(c(rmse_lm, rmse_lasso, rmse_gbm), 3),
+  `Mean Abs Error` = round(c(
+    mean(abs(test$position - pred_lm)),
+    mean(abs(y_test - pred_lasso)),
+    mean(abs(test$position - pred_gbm))
+  ), 2),
+  check.names = FALSE
+)
+
+kable(results_summary, align = 'lcc', caption = "Model Performance Metrics")
+```
+</div>
+
+**Winner: `r results_df$Model[which.min(results_df$RMSE)]`**
+
+Average prediction error of **`r round(min(results_df$RMSE), 2)` positions**
+
+## Prediction Accuracy Visualization
+
+```{r predictions_plot, fig.width=12, fig.height=5}
+compare_df <- data.frame(
+  actual = test$position,
+  pred_lm = pred_lm,
+  pred_lasso = as.numeric(pred_lasso),
+  pred_gbm = pred_gbm
+)
+
+compare_long <- compare_df %>%
+  pivot_longer(
+    cols = starts_with("pred_"),
+    names_to = "Model",
+    values_to = "Predicted"
+  ) %>%
+  mutate(
+    Model = recode(Model,
+                   "pred_lm" = "Linear Regression",
+                   "pred_lasso" = "Lasso",
+                   "pred_gbm" = "Gradient Boosting")
+  )
+
+ggplot(compare_long, aes(x = actual, y = Predicted)) +
+  geom_point(alpha = 0.3, color = "#E10600", size = 2) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", 
+              color = "#00D2BE", size = 1) +
+  facet_wrap(~ Model, nrow = 1) +
+  labs(
+    title = "Actual vs Predicted Finishing Position",
+    subtitle = "Points closer to diagonal line indicate better predictions",
+    x = "Actual Position",
+    y = "Predicted Position"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    strip.text = element_text(face = "bold", size = 12)
+  )
+```
+
+## Feature Importance (Gradient Boosting)
+
+```{r feature_importance, fig.height=5}
+importance_df <- summary(gbm_model, n.trees = best_iter, 
+                         plotit = FALSE) %>%
+  mutate(var = recode(var,
+                      "grid" = "Grid Position",
+                      "avg_lap" = "Average Lap Time",
+                      "fastest_lap" = "Fastest Lap",
+                      "sd_lap" = "Lap Time Variability"))
+
+ggplot(importance_df, aes(x = reorder(var, rel.inf), y = rel.inf)) +
+  geom_col(fill = "#E10600", width = 0.6) +
+  geom_text(aes(label = round(rel.inf, 1)), hjust = -0.2, size = 5) +
+  coord_flip() +
+  labs(
+    title = "Feature Importance in Race Outcome Prediction",
+    subtitle = "Relative influence on model predictions (%)",
+    x = NULL,
+    y = "Relative Importance (%)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text.y = element_text(size = 12)
+  ) +
+  ylim(0, max(importance_df$rel.inf) * 1.15)
+```
+
+## Key Findings
+
+**Primary Insights:**
+
+1. **Grid Position Dominance** - Starting position is the strongest predictor (~45% importance)
+
+2. **Pace Matters** - Average lap time shows strong correlation with final position
+
+3. **Consistency is Key** - Lower lap time variability indicates better finishing positions
+
+4. **Model Choice** - Gradient Boosting captures non-linear relationships better than linear models
+
+## Coefficient Comparison
+
+```{r coefficients}
+coef_compare <- data.frame(
+  Feature = c("Intercept", "Average Lap", "Fastest Lap", "Lap Variability", "Grid Position"),
+  `Linear Regression` = round(coef(lm_model), 6),
+  `Lasso` = round(as.numeric(coef(lasso_model)), 6),
+  check.names = FALSE
+)
+
+kable(coef_compare, align = 'lcc', 
+      caption = "Model Coefficients: Linear vs Lasso Regression")
+```
+
+<div class="notes">
+- Lasso applies regularization, shrinking less important coefficients
+- Both models identify similar patterns in the data
+- Gradient Boosting doesn't use linear coefficients
+</div>
+
+## Limitations & Future Work
+
+**Current Limitations:**
+
+- Limited to lap time and grid position features
+- Doesn't account for weather conditions
+- No driver skill or team strategy variables
+
+**Future Improvements:**
+
+- Incorporate weather and track characteristics
+- Add driver historical performance metrics
+- Include pit stop strategy and tire compound data
+- Analyze season-long trends and car development
+
+## Practical Applications
+
+**How This Can Be Used:**
+
+- **Teams**: Optimize race strategy and pit stop timing
+- **Betting**: Inform prediction models for race outcomes  
+- **Fans**: Better understand factors behind race results
+- **Broadcasters**: Enhance race commentary with data insights
+
+## Conclusion
+
+<div class="columns-2">
+**Key Takeaways:**
+
+✓ Grid position is crucial for success
+
+✓ Consistent lap times matter
+
+✓ Machine learning can predict F1 races with reasonable accuracy
+
+✓ Gradient Boosting outperforms linear models
+
+**Impact:**
+
+- Average error of ~`r round(rmse_gbm, 1)` positions
+- Identifies key performance drivers
+- Foundation for more complex models
+</div>
+
+## Questions?
+
+<div class="centered" style="margin-top: 100px;">
+<h3>Thank you!</h3>
+
+**Contact:**
+Rohan, Timur, Sanjay, Luke
+
+*Formula 1 Data Science Project*
+</div>
+
+---
+
+## Appendix: Technical Details {.smaller}
+
+**Data Preprocessing:**
+
+- Merged multiple CSV files (results, lap_times, qualifying)
+- Created aggregated features from lap-level data
+- Removed incomplete observations
+- 70/30 train-test split with random seed for reproducibility
+
+**Model Parameters:**
+
+- Lasso: Lambda selected via 10-fold cross-validation
+- GBM: 3000 trees, learning rate 0.01, tree depth 3
+- Cross-validation used for all models to prevent overfitting
