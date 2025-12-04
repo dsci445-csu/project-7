@@ -6,28 +6,25 @@ output: html_document
 
 ## Introduction
 
-We are using the Formula 1 World Championship dataset from Kaggle (1950–2020) to predict race outcomes.  
-Our goal is to build a model in R to determine which factors help predict how drivers will finish.
+The highest level of motorsport is Formula 1, a complex network where driver skill, engineering capability, and strategic thinking come together. Any Grand Prix's results are chaotic, influenced by a wide range of factors, which means predicting race outcomes is a difficult yet interesting analytical task. Our goal for this project is to create a prediction model in R to identify the main variables influencing a driver's finishing place. 
 
-## Data
+## Data 
 
-The dataset includes information on:
+This dataset is organized into several CSV files, each describing a particular aspect of the sport. To understand the variables, here is a list of the project's main data sources, which we will use. 
 
-- Drivers  
-- Teams  
-- Races  
-- Results  
-- Lap times  
-- Pit stops  
-- Qualifying sessions  
-
-We plan to use features such as:
-
-- Grid position  
-- Lap times  
-- Pit stops  
-- Driver history  
-- Constructor (team) performance  
+Data Summary: 
+races.csv - Contains details for each race, including year, round, circuit, and date. 
+results.csv - Provides the finishing results for each driver in every race, including grid position, points, and status. 
+sprint_results.csv - Contains the results from the more recently introduced sprint race format. 
+drivers.csv - Includes biographical information for each driver, such as name and nationality. 
+constructors.csv -Contains details about the teams (constructors), including their name and nationality. 
+qualifying.csv -Records the results from qualifying sessions, which determine the starting grid. 
+lap_times.csv(Rohan) - Provides lap-by-lap timing data for each driver within a race. 
+pit_stops.csv - Details every pit stop, including the lap number, duration, and driver. 
+driver_standings.csv - Tracks the championship standings for each driver after every race. 
+constructor_standings.csv - Tracks the championship standings for each constructor after every race. 
+circuits.csv - Provides information about each race circuit, including its location and country. 
+status.csv - Defines the various finishing statuses (Finished, Accident).  
 
 ## Methods
 
