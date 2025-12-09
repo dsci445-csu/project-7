@@ -139,7 +139,7 @@ rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
 # Random Forest
 rf_model <- randomForest(position_numeric ~ ., data = train, ntree = 500, mtry = 3, importance = TRUE)
 pred_rf <- predict(rf_model, test)
-rf_rmse <- sqrt(mean((pred - test$position_numeric)^2))
+rf_rmse <- sqrt(mean((pred_rf - test$position_numeric)^2))
 ```
 
 ## Introduction
