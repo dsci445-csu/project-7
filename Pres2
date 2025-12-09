@@ -360,8 +360,6 @@ ggplot(compare_long, aes(x = actual, y = Predicted)) +
 
 ✓ Qualifying speed and team quality are vital
 
-✓ Machine learning can predict F1 races with high accuracy
-
 ✓ Gradient Boosting outperforms linear models
 
 **Impact:**
