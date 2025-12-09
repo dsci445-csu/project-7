@@ -1,36 +1,63 @@
----
-title: "Predicting Formula 1 Race Outcomes in R"
-author: "Rohan, Timur, Sanjay, Luke"
-output: html_document
----
+Predicting Formula 1 Race Outcomes in R 
 
-## Introduction
-The highest level of motorsport is Formula 1, a complex network where driver skill, engineering capability, and strategic thinking come together. Any Grand Prix's results are chaotic, influenced by a wide range of factors, which means predicting race outcomes is a difficult yet interesting analytical task. Our goal for this project is to create a prediction model in R to identify the main variables influencing a driver's finishing place. 
+Rohan, Timur, Sanjay, Luke 
 
-## Data 
-This dataset is organized into several CSV files, each describing a particular aspect of the sport. To understand the variables, here is a list of the project's main data sources, which we will use. 
+Introductions 
+
+The highest level of motorsport can be seen in Formula 1, a complex network where driver skill, engineering capability, and strategic thinking come together. Any Grand Prix's result is a chaotic event impacted by a wide range of factors, which means predicting race outcomes is a difficult and interesting analytical task. Our goal for this project is to create a prediction model in R to identify the main variables influencing a driver's finishing place. 
+
+Data 
+
+This dataset is organized into several CSV files, each of which describes a particular aspect of the sport. To understand the variables, here is a list of the project's main data sources which we will use. 
 
 Data Summary: 
-races.csv - Contains details for each race, including year, round, circuit, and date. 
+
+races.csv - Contains details for each race including year, round, circuit, and date. 
+
 results.csv - Provides the finishing results for each driver in every race, including grid position, points, and status. 
+
 sprint_results.csv - Contains the results from the more recently introduced sprint race format. 
+
 drivers.csv - Includes biographical information for each driver, such as name and nationality. 
+
 constructors.csv -Contains details about the teams (constructors), including their name and nationality. 
+
 qualifying.csv -Records the results from qualifying sessions, which determine the starting grid. 
+
 lap_times.csv(Rohan) - Provides lap-by-lap timing data for each driver within a race. 
-pit_stops.csv - Details every pit stop, including the lap number, duration, and driver. 
-driver_standings.csv - Tracks the championship standings for each driver after every race. 
+
+pit_stops.csv(Timur) - Details every pit stop, including the lap number, duration, and driver. 
+
+driver_standings.csv(Timur) - Tracks the championship standings for each driver after every race. 
+
 constructor_standings.csv - Tracks the championship standings for each constructor after every race. 
+
 circuits.csv - Provides information about each race circuit, including its location and country. 
-status.csv - Defines the various finishing statuses (Finished, Accident).  
 
-## Methods
-Our process will include:
+status.csv - Defines the various finishing statuses (Finished, Accident). 
 
-1. Cleaning and merging the data in R  
-2. Creating features such as average lap time, pit stop counts, team strength, and qualifying times  
-3. Testing models such as ridge regression, LASSO, and logistic regression  
-4. Comparing model performance and accuracy  
+ 
 
-## Conclusion
+Methods 
+
+Our process will include: 
+
+Cleaning and merging the data in R 
+
+Creating features like average lap time, fastest lap time, grid positions, ... 
+
+Testing models such as linear regression and Lasso, gradient boosting and 
+
+Comparing model performance and accuracy 
+
+Conclusion 
+
 The goal of this project is to provide a data-driven look at the variables that influence Formula 1 success. We want to identify the factors that have the greatest impact on race outcomes through developing and evaluating predictive models in R. The results will show how to apply machine learning techniques to a real-world problem. In order to improve the predicted accuracy, we will also be exploring more advanced modeling algorithms, such as gradient boosting. 
+
+ 
+
+ 
+
+ 
+
+ 
