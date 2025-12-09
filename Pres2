@@ -139,12 +139,12 @@ rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
 **Project Overview**
 
 - Analyze comprehensive Formula 1 data (1950–2024)
-- Goal: Predict final race positions using machine learning
-- Dataset from Kaggle with 70+ years of racing history from **all 14 CSV files**
+- Goal: Creating a prediction model in R to identify the main variables influencing a driver's finishing place.
+- Dataset from Kaggle with 70+ years of racing history
 
 **Key Questions**
 
-- What factors from all files most influence race outcomes?
+- What factors most influence race outcomes?
 - Can we accurately predict finishing positions?
 - Which model performs best for F1 predictions?
 
@@ -167,18 +167,6 @@ rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
 *Total observations after merging and cleaning: `r format(nrow(model_data), big.mark=",")`*
 </div>
 
-## Feature Engineering
-
-**Predictive Features Created from All CSVs:**
-
-| Feature | Source CSV | Description |
-|:---|:---|:---|
-| `total_pit_stops` | `pit_stops.csv` | Total number of pit stops made by a driver. |
-| `total_laps` | `lap_times.csv` | Total number of laps completed. |
-| `qualifying_position` | `qualifying.csv` | The driver's best position in qualifying. |
-| `prev_championship_wins` | `driver_standings.csv` | Driver's wins *before* the current race. |
-| `prev_constructor_position` | `constructor_standings.csv` | Team's rank *before* the current race. |
-| `grid` | `results.csv` | The official starting grid position. |
 
 ## Methodology
 
@@ -192,6 +180,21 @@ rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
 
 - Measures average prediction error in positions
 - Lower RMSE = better predictions
+
+
+## Feature Engineering
+
+**Predictive Features Created from All CSVs:**
+
+| Feature | Source CSV | Description |
+|:---|:---|:---|
+| `total_pit_stops` | `pit_stops.csv` | Total number of pit stops made by a driver. |
+| `total_laps` | `lap_times.csv` | Total number of laps completed. |
+| `qualifying_position` | `qualifying.csv` | The driver's best position in qualifying. |
+| `prev_championship_wins` | `driver_standings.csv` | Driver's wins *before* the current race. |
+| `prev_constructor_position` | `constructor_standings.csv` | Team's rank *before* the current race. |
+| `grid` | `results.csv` | The official starting grid position. |
+
 
 ## Detailed Analysis: Pit Stop Strategy
 
@@ -389,3 +392,4 @@ Rohan, Timur, Sanjay, Luke
 
 *Formula 1 Data Science Project*
 </div>
+
