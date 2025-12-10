@@ -423,7 +423,7 @@ ggplot(compare_long, aes(x = actual, y = Predicted)) +
 
 3. **Team & Driver Quality Matters** - `prev_constructor_position` and `prev_championship_wins` are significant factors.
 
-4. **Model Choice** - Gradient Boosting captures non-linear relationships better than linear models, providing the best accuracy.
+4. **Model Choice** - Gradient Boosting and random forest capture non-linear relationships better than linear models, providing the best accuracy.
 
 
 ## Limitations & Future Work
@@ -456,7 +456,7 @@ ggplot(compare_long, aes(x = actual, y = Predicted)) +
 
 ✓ Machine learning can predict F1 races with high accuracy
 
-✓ Gradient Boosting outperforms linear models
+✓ Gradient Boosting and Random Forest modeling outperform linear models because f1 outcomes involve complex interactions, not just simple linear effects
 
 **Impact:**
 
