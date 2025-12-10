@@ -1,85 +1,479 @@
 ---
-title: "Predicting Formula 1 Race Outcomes in R"
+title: "Predicting Formula 1 Race Outcomes"
+subtitle: "Machine Learning Analysis Using Historical F1 Data"
 author: "Rohan, Timur, Sanjay, Luke"
-output: ioslides_presentation
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+    smaller: false
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 5.5,
+  fig.align = 'center'
+)
+
+# Load libraries
+library(dplyr)
+library(ggplot2)
+library(glmnet)
+library(gbm)
+library(tidyr)
+library(knitr)
+library(randomForest)
+
+# Set ggplot theme
+theme_set(theme_minimal(base_size = 14))
+```
+
+```{r data_prep, cache=TRUE, include=FALSE}
+# ============================================================================
+# DATA LOADING & FEATURE ENGINEERING (ALL CSVs)
+# ============================================================================
+
+# Load all 14 datasets
+results <- read.csv("results.csv")
+pit_stops <- read.csv("pit_stops.csv")
+driver_standings <- read.csv("driver_standings.csv")
+races <- read.csv("races.csv")
+qualifying <- read.csv("qualifying.csv")
+lap_times <- read.csv("lap_times.csv")
+constructor_standings <- read.csv("constructor_standings.csv")
+
+# Engineer features from all relevant sources
+pit_stop_features <- pit_stops %>% group_by(raceId, driverId) %>% summarise(total_pit_stops = n(), .groups = 'drop')
+lap_time_features <- lap_times %>% group_by(raceId, driverId) %>% summarise(total_laps = n(), .groups = 'drop')
+qualifying_features <- qualifying %>% group_by(raceId, driverId) %>% summarise(qualifying_position = min(position), .groups = 'drop')
+
+driver_standings_features <- driver_standings %>% arrange(driverId, raceId) %>% group_by(driverId) %>%
+  mutate(prev_championship_wins = lag(wins)) %>% ungroup() %>% 
+  mutate(prev_championship_wins = ifelse(is.na(prev_championship_wins), 0, prev_championship_wins)) %>% 
+  select(raceId, driverId, prev_championship_wins)
+
+constructor_standings_features <- constructor_standings %>% arrange(constructorId, raceId) %>% group_by(constructorId) %>%
+  mutate(prev_constructor_position = lag(position)) %>% ungroup() %>% 
+  mutate(prev_constructor_position = ifelse(is.na(prev_constructor_position), 10, prev_constructor_position)) %>% 
+  select(raceId, constructorId, prev_constructor_position)
+
+# Merge all data
+analysis_data <- results %>% 
+  left_join(races %>% select(raceId, year, round), by = "raceId") %>% 
+  left_join(pit_stop_features, by = c("raceId", "driverId")) %>% 
+  left_join(lap_time_features, by = c("raceId", "driverId")) %>% 
+  left_join(qualifying_features, by = c("raceId", "driverId")) %>% 
+  left_join(driver_standings_features, by = c("raceId", "driverId")) %>% 
+  left_join(constructor_standings_features, by = c("raceId", "constructorId"))
+
+# Handle missing values and create final model data
+analysis_data <- analysis_data %>% 
+  mutate(
+    total_pit_stops = ifelse(is.na(total_pit_stops), 0, total_pit_stops),
+    total_laps = ifelse(is.na(total_laps), 0, total_laps),
+    qualifying_position = ifelse(is.na(qualifying_position), grid, qualifying_position),
+    position_numeric = as.numeric(position),
+    position_numeric = ifelse(is.na(position_numeric), 25, position_numeric)
+  )
+
+model_data <- analysis_data %>% 
+  filter(!is.na(grid) & total_laps > 0) %>% 
+  select(
+    position_numeric, grid, qualifying_position, total_pit_stops, total_laps,
+    prev_championship_wins, prev_constructor_position, year, round
+  ) %>% 
+  na.omit()
+
+# Train/test split
+set.seed(123)
+n <- nrow(model_data)
+train_idx <- sample(1:n, size = 0.7 * n)
+train <- model_data[train_idx, ]
+test <- model_data[-train_idx, ]
+
+# ============================================================================
+# MODEL TRAINING
+# ============================================================================
+
+# Linear Regression
+lm_model <- lm(position_numeric ~ ., data = train)
+pred_lm <- predict(lm_model, newdata = test)
+rmse_lm <- sqrt(mean((test$position_numeric - pred_lm)^2))
+
+# Lasso Regression
+X_train <- as.matrix(train[, -1])
+y_train <- train$position_numeric
+X_test <- as.matrix(test[, -1])
+y_test <- test$position_numeric
+
+cv_lasso <- cv.glmnet(X_train, y_train, alpha = 1)
+best_lambda <- cv_lasso$lambda.min
+lasso_model <- glmnet(X_train, y_train, alpha = 1, lambda = best_lambda)
+pred_lasso <- predict(lasso_model, newx = X_test)
+rmse_lasso <- sqrt(mean((y_test - pred_lasso)^2))
+
+# Gradient Boosting
+gbm_model <- gbm(
+  formula = position_numeric ~ .,
+  data = train,
+  distribution = "gaussian",
+  n.trees = 1000,
+  interaction.depth = 3,
+  shrinkage = 0.01,
+  n.minobsinnode = 10,
+  cv.folds = 5,
+  verbose = FALSE
+)
+
+best_iter <- gbm.perf(gbm_model, method = "cv", plot.it = FALSE)
+pred_gbm <- predict(gbm_model, newdata = test, n.trees = best_iter)
+rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
+
+
+# Random Forest
+rf_model <- randomForest(position_numeric ~ ., data = train, ntree = 500, mtry = 3, importance = TRUE)
+pred_rf <- predict(rf_model, test)
+rf_rmse <- sqrt(mean((test$position_numeric - pred_rf)^2))
+
+```
 
 ## Introduction
 
-- We analyze the Formula 1 World Championship dataset (1950–2020) from Kaggle.  
-- Goal: Predict race outcomes using statistical and machine learning models in R.  
-- Focus: Identify factors that influence where a driver finishes.
+<div class="columns-2">
+**Project Overview**
 
----
+- Analyze comprehensive Formula 1 data (1950–2024)
+- Goal: Creating a prediction model in R to identify the main variables influencing a driver's finishing place.
+- Dataset from Kaggle with 70+ years of racing history
 
-## Data Overview
+**Key Questions**
 
-The dataset includes:
+- What factors most influence race outcomes?
+- Can we accurately predict finishing positions?
+- Which model performs best for F1 predictions?
 
-- Drivers  
-- Teams (Constructors)  
-- Races  
-- Results  
-- Lap Times  
-- Pit Stops  
-- Qualifying Sessions  
+</div>
 
----
+## Dataset Overview
 
-## Features Used
+**Comprehensive F1 Historical Data:**
 
-Key predictors considered:
+- **Drivers**: Complete career statistics
+- **Constructors**: Team performance metrics  
+- **Races**: Circuit and season information
+- **Results**: Finishing positions and points
+- **Lap Times**: Detailed timing data
+- **Qualifying**: Grid position data
+- **Pit Stops**: Pit stop counts and durations
+- **And 8 more files...**
 
-- **Grid Position**  
-- **Average Lap Time**  
-- **Pit Stop Count**  
-- **Driver Performance History**  
-- **Constructor Strength**  
+## Methodology
 
----
+**Three-Model Comparison:**
 
-## Methods
+1. **Linear Regression** - Baseline model with interpretable coefficients
+2. **Lasso Regression** - Regularized model with feature selection
+3. **Gradient Boosting** - Advanced ensemble method
 
-Our workflow includes:
+**Evaluation Metric:** Root Mean Squared Error (RMSE)
 
-1. Data cleaning and merging  
-2. Feature engineering  
-   - Average lap time  
-   - Pit stop totals  
-   - Team performance metrics  
-3. Model testing  
-   - Ridge Regression  
-   - LASSO  
-   - Logistic Regression  
+- Measures average prediction error in positions
+- Lower RMSE = better predictions
 
----
 
-## Model Comparison
+## Predictive Analasys
 
-- Evaluate accuracy and predictive performance  
-- Compare coefficients and variable importance  
-- Assess overfitting using cross-validation  
+**Predictive Features Created from CSVs:**
 
----
+| Feature | Source CSV | Description |
+|:---|:---|:---|
+| `total_pit_stops` | `pit_stops.csv` | Total number of pit stops made by a driver. |
+| `total_laps` | `lap_times.csv` | Total number of laps completed. |
+| `qualifying_position` | `qualifying.csv` | The driver's best position in qualifying. |
+| `prev_championship_wins` | `driver_standings.csv` | Driver's wins *before* the current race. |
+| `prev_constructor_position` | `constructor_standings.csv` | Team's rank *before* the current race. |
+| `grid` | `results.csv` | The official starting grid position. |
 
-## Early Insights (Template)
 
-*(Replace with results once computed)*
 
-- Grid position appears to be a strong predictor  
-- Faster average lap times correlate with better finishes  
-- Teams with stronger constructors show consistent advantage  
+## Coefficient Comparison
 
----
+```{r coefficients}
+coefs_lm <- coef(lm_model)
+coefs_lasso <- as.numeric(coef(lasso_model))
+
+coef_compare <- data.frame(
+  Feature = names(coefs_lm),
+  `Linear Regression` = round(coefs_lm, 6),
+  `Lasso` = round(coefs_lasso, 6),
+  check.names = FALSE,
+  row.names = NULL
+)
+
+kable(coef_compare, align = 'lcc',
+      caption = "Model Coefficients: Linear vs Lasso Regression")
+```
+
+
+## Analysis: Pit Stop Strategy
+
+```{r pit_stop_graph, fig.height=5}
+ggplot(model_data, aes(x = factor(total_pit_stops), y = position_numeric)) +
+  geom_boxplot(fill = "#E10600", alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.05, color = "#FF8700") +
+  labs(
+    title = "Impact of Pit Stops on Finishing Position",
+    x = "Total Number of Pit Stops",
+    y = "Finishing Position"
+  ) + 
+  coord_cartesian(ylim = c(1, 25))
+```
+
+**Insight:** While it seems counterintuitive, making pit stops is a sign of a competitive driver who is completing the race.
+
+## Analysis: Qualifying Position
+
+```{r qualifying_graph, fig.height=5}
+ggplot(model_data, aes(x = qualifying_position, y = position_numeric)) +
+  geom_point(alpha = 0.1, color = "#E10600") +
+  geom_smooth(method = "lm", color = "#00D2BE", se = TRUE, size = 1.5) +
+  labs(
+    title = "Impact of Qualifying on Finishing Position",
+    x = "Qualifying Position",
+    y = "Finishing Position"
+  )
+```
+
+**Insight:** Where you start is a massive predictor of where you finish. Strong Linear Relationship
+
+## Analysis: Laps Completed
+
+```{r laps_graph, fig.height=5}
+ggplot(model_data, aes(x = total_laps, y = position_numeric)) +
+  geom_point(alpha = 0.1, color = "#E10600") +
+  geom_smooth(method = "lm", color = "#00D2BE", se = TRUE, size = 1.5) +
+  labs(
+    title = "Impact of Laps Completed on Finishing Position",
+    subtitle = "Completing more laps is directly correlated with a better finish",
+    x = "Total Laps Completed",
+    y = "Finishing Position"
+  )
+```
+
+**Insight:** You can't win if you don't finish the race.
+
+## Analysis: Team Performance
+
+```{r constructor_graph, fig.height=5}
+ggplot(model_data, aes(x = factor(prev_constructor_position), y = position_numeric)) +
+  geom_boxplot(fill = "#E10600", alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.05, color = "#FF8700") +
+  labs(
+    title = "Impact of Team Performance on Finishing Position",
+    x = "Team's Previous Championship Position",
+    y = "Finishing Position"
+  ) + 
+  coord_cartesian(ylim = c(1, 25))
+```
+
+**Insight:** The strength of the car and team is a huge factor. Top teams consistently outperform the rest of the field.
+
+## Model Performance Comparison
+
+```{r performance_chart, fig.height=5}
+results_df <- data.frame(
+  Model = factor(c("Linear Regression", "Lasso", "Gradient Boosting", "Random Forest"),
+                 levels = c("Linear Regression", "Lasso", "Gradient Boosting", "Random Forest")),
+  RMSE  = c(rmse_lm, rmse_lasso, rmse_gbm, rf_rmse)
+)
+
+ggplot(results_df, aes(x = Model, y = RMSE, fill = Model)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = round(RMSE, 3)), vjust = -0.5, size = 6, fontface = "bold") +
+  scale_fill_manual(values = c("#E10600", "#FF8700", "#00D2BE", "blue")) +
+  labs(
+    title = "Model Comparison: Prediction Error (RMSE)",
+    subtitle = "Lower RMSE indicates better prediction accuracy",
+    y = "Root Mean Squared Error",
+    x = NULL
+  ) +
+  ylim(0, max(results_df$RMSE) * 1.15)
+```
+
+## Feature Importance
+
+```{r feature_importance, fig.height=5}
+importance_df <- summary(gbm_model, n.trees = best_iter, plotit = FALSE) %>% 
+  mutate(var = recode(var,
+                      "total_pit_stops" = "Total Pit Stops",
+                      "qualifying_position" = "Qualifying Position",
+                      "total_laps" = "Total Laps Completed",
+                      "prev_constructor_position" = "Team's Previous Rank",
+                      "prev_championship_wins" = "Driver's Previous Wins",
+                      "grid" = "Grid Position",
+                      "year" = "Year",
+                      "round" = "Round"
+                      ))
+
+
+ggplot(importance_df, aes(x = reorder(var, rel.inf), y = rel.inf)) +
+  geom_col(fill = "#E10600", width = 0.7) +
+  geom_text(aes(label = round(rel.inf, 1)), hjust = -0.2, size = 5) +
+  coord_flip() +
+  labs(
+    title = "Feature Importance in Race Outcome Prediction",
+    subtitle = "Relative influence on Gradient Boosting model predictions (%)",
+    x = NULL,
+    y = "Relative Importance (%)"
+  ) +
+  ylim(0, max(importance_df$rel.inf) * 1.15)
+```
+
+## Prediction Accuracy: Linear vs Lasso
+
+```{r predictions_plot_lm_lasso, fig.width=12, fig.height=5}
+compare_df <- data.frame(
+  actual    = test$position_numeric,
+  pred_lm   = pred_lm,
+  pred_lasso = as.numeric(pred_lasso)
+)
+
+compare_long <- compare_df %>%
+  pivot_longer(
+    cols = starts_with("pred_"),
+    names_to = "Model",
+    values_to = "Predicted"
+  ) %>%
+  mutate(
+    Model = recode(
+      Model,
+      "pred_lm"    = "Linear Regression",
+      "pred_lasso" = "Lasso"
+    )
+  )
+
+ggplot(compare_long, aes(x = actual, y = Predicted)) +
+  geom_point(alpha = 0.3, color = "#E10600", size = 2) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = "#00D2BE",
+    size = 1
+  ) +
+  facet_wrap(~ Model, nrow = 1) +
+  labs(
+    title = "Actual vs Predicted Finishing Position",
+    x = "Actual Position",
+    y = "Predicted Position"
+  )
+```
+
+## Prediction Accuracy: Gradient Boosting vs Random Forest
+
+```{r predictions_plot_gbm_rf, fig.width=12, fig.height=5}
+compare_df <- data.frame(
+  actual  = test$position_numeric,
+  pred_gbm = pred_gbm,
+  pred_rf  = pred_rf
+)
+
+compare_long <- compare_df %>%
+  pivot_longer(
+    cols = starts_with("pred_"),
+    names_to = "Model",
+    values_to = "Predicted"
+  ) %>%
+  mutate(
+    Model = recode(
+      Model,
+      "pred_gbm" = "Gradient Boosting",
+      "pred_rf"  = "Random Forest"
+    )
+  )
+
+ggplot(compare_long, aes(x = actual, y = Predicted)) +
+  geom_point(alpha = 0.3, color = "#E10600", size = 2) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = "#00D2BE",
+    size = 1
+  ) +
+  facet_wrap(~ Model, nrow = 1) +
+  labs(
+    title = "Actual vs Predicted Finishing Position",
+    x = "Actual Position",
+    y = "Predicted Position"
+  )
+```
+
+## Key Findings
+
+**Primary Insights from All CSV Files:**
+
+1. **Strategy & Reliability Dominance** - `total_pit_stops` and `total_laps` are the strongest predictors.
+
+2. **Qualifying is Critical** - `qualifying_position` has a massive impact on the final outcome.
+
+3. **Team & Driver Quality Matters** - `prev_constructor_position` and `prev_championship_wins` are significant factors.
+
+4. **Model Choice** - Gradient Boosting captures non-linear relationships better than linear models, providing the best accuracy.
+
+
+## Limitations & Future Work
+
+**Current Limitations:**
+
+- Doesn't account for weather conditions
+- Limited driver skill metrics beyond wins
+- No tire compound or detailed strategy data
+
+**Future Improvements:**
+
+- Incorporate weather and track characteristics
+- Add more granular driver performance metrics
+- Include detailed pit stop strategy and tire data
+- Analyze season-long trends and car development
+- Real-time predictions during race weekends
+
+
+
 
 ## Conclusion
 
-- Multiple factors influence F1 race outcomes  
-- Our models help identify which metrics matter most  
-- Future improvements: incorporate weather, track characteristics, and season trends  
+<div class="columns-2">
+**Key Takeaways:**
 
----
+✓ Strategy and reliability are crucial for success
+
+✓ Qualifying speed and team quality are vital
+
+✓ Machine learning can predict F1 races with high accuracy
+
+✓ Gradient Boosting outperforms linear models
+
+**Impact:**
+
+- Average error of ~`r round(rmse_gbm, 1)` positions
+
+- Identifies key performance drivers from all data sources
+
+- Foundation for more complex models
+</div>
 
 ## Questions?
 
-Thank you!
+<div class="centered" style="margin-top: 100px;">
+<h3>Thank you!</h3>
+
+**Contact:**
+Rohan, Timur, Sanjay, Luke
+
+*Formula 1 Data Science Project*
+</div>
