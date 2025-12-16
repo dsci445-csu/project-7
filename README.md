@@ -14,7 +14,6 @@ This project provides an RStudio based analysis to determin key variables, and t
 **Key Objectives:**
 - Identify the most impactful variables on race finishing position.
 - Build and evaluate several regression models (Linear, Ridge, Lasso).
-- Create a logistic regression model to predict podium (Top 3) finishes.
 - Present all findings in a presentation.
 
 ---
