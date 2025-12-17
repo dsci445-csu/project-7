@@ -1,12 +1,13 @@
 ---
 title: "Predicting Formula 1 Race Outcomes"
-subtitle: "Machine Learning Analysis Using Historical F1 Data"
 author: "Rohan, Timur, Sanjay, Luke"
 date: "`r Sys.Date()`"
-output: 
+output:
   ioslides_presentation:
     widescreen: true
     smaller: false
+  beamer_presentation: default
+subtitle: Machine Learning Analysis Using Historical F1 Data
 ---
 
 ```{r setup, include=FALSE}
@@ -26,6 +27,7 @@ library(glmnet)
 library(gbm)
 library(tidyr)
 library(knitr)
+library(randomForest)
 
 # Set ggplot theme
 theme_set(theme_minimal(base_size = 14))
@@ -131,6 +133,13 @@ gbm_model <- gbm(
 best_iter <- gbm.perf(gbm_model, method = "cv", plot.it = FALSE)
 pred_gbm <- predict(gbm_model, newdata = test, n.trees = best_iter)
 rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
+
+
+# Random Forest
+rf_model <- randomForest(position_numeric ~ ., data = train, ntree = 500, mtry = 3, importance = TRUE)
+pred_rf <- predict(rf_model, test)
+rf_rmse <- sqrt(mean((test$position_numeric - pred_rf)^2))
+
 ```
 
 ## Introduction
@@ -189,6 +198,26 @@ rmse_gbm <- sqrt(mean((test$position_numeric - pred_gbm)^2))
 | `prev_championship_wins` | `driver_standings.csv` | Driver's wins *before* the current race. |
 | `prev_constructor_position` | `constructor_standings.csv` | Team's rank *before* the current race. |
 | `grid` | `results.csv` | The official starting grid position. |
+
+
+
+## Coefficient Comparison
+
+```{r coefficients}
+coefs_lm <- coef(lm_model)
+coefs_lasso <- as.numeric(coef(lasso_model))
+
+coef_compare <- data.frame(
+  Feature = names(coefs_lm),
+  `Linear Regression` = round(coefs_lm, 6),
+  `Lasso` = round(coefs_lasso, 6),
+  check.names = FALSE,
+  row.names = NULL
+)
+
+kable(coef_compare, align = 'lcc',
+      caption = "Model Coefficients: Linear vs Lasso Regression")
+```
 
 
 ## Analysis: Pit Stop Strategy
@@ -258,15 +287,15 @@ ggplot(model_data, aes(x = factor(prev_constructor_position), y = position_numer
 
 ```{r performance_chart, fig.height=5}
 results_df <- data.frame(
-  Model = factor(c("Linear Regression", "Lasso", "Gradient Boosting"),
-                 levels = c("Linear Regression", "Lasso", "Gradient Boosting")),
-  RMSE  = c(rmse_lm, rmse_lasso, rmse_gbm)
+  Model = factor(c("Linear Regression", "Lasso", "Gradient Boosting", "Random Forest"),
+                 levels = c("Linear Regression", "Lasso", "Gradient Boosting", "Random Forest")),
+  RMSE  = c(rmse_lm, rmse_lasso, rmse_gbm, rf_rmse)
 )
 
 ggplot(results_df, aes(x = Model, y = RMSE, fill = Model)) +
   geom_col(width = 0.6, show.legend = FALSE) +
   geom_text(aes(label = round(RMSE, 3)), vjust = -0.5, size = 6, fontface = "bold") +
-  scale_fill_manual(values = c("#E10600", "#FF8700", "#00D2BE")) +
+  scale_fill_manual(values = c("#E10600", "#FF8700", "#00D2BE", "blue")) +
   labs(
     title = "Model Comparison: Prediction Error (RMSE)",
     subtitle = "Lower RMSE indicates better prediction accuracy",
@@ -305,14 +334,13 @@ ggplot(importance_df, aes(x = reorder(var, rel.inf), y = rel.inf)) +
   ylim(0, max(importance_df$rel.inf) * 1.15)
 ```
 
-## Prediction Accuracy Visualization
+## Prediction Accuracy: Linear vs Lasso
 
-```{r predictions_plot, fig.width=12, fig.height=5}
+```{r predictions_plot_lm_lasso, fig.width=12, fig.height=5}
 compare_df <- data.frame(
-  actual = test$position_numeric,
-  pred_lm = pred_lm,
-  pred_lasso = as.numeric(pred_lasso),
-  pred_gbm = pred_gbm
+  actual    = test$position_numeric,
+  pred_lm   = pred_lm,
+  pred_lasso = as.numeric(pred_lasso)
 )
 
 compare_long <- compare_df %>%
@@ -322,15 +350,62 @@ compare_long <- compare_df %>%
     values_to = "Predicted"
   ) %>%
   mutate(
-    Model = recode(Model,
-                   "pred_lm" = "Linear Regression",
-                   "pred_lasso" = "Lasso",
-                   "pred_gbm" = "Gradient Boosting")
+    Model = recode(
+      Model,
+      "pred_lm"    = "Linear Regression",
+      "pred_lasso" = "Lasso"
+    )
   )
 
 ggplot(compare_long, aes(x = actual, y = Predicted)) +
   geom_point(alpha = 0.3, color = "#E10600", size = 2) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#00D2BE", size = 1) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = "#00D2BE",
+    size = 1
+  ) +
+  facet_wrap(~ Model, nrow = 1) +
+  labs(
+    title = "Actual vs Predicted Finishing Position",
+    x = "Actual Position",
+    y = "Predicted Position"
+  )
+```
+
+## Prediction Accuracy: Gradient Boosting vs Random Forest
+
+```{r predictions_plot_gbm_rf, fig.width=12, fig.height=5}
+compare_df <- data.frame(
+  actual  = test$position_numeric,
+  pred_gbm = pred_gbm,
+  pred_rf  = pred_rf
+)
+
+compare_long <- compare_df %>%
+  pivot_longer(
+    cols = starts_with("pred_"),
+    names_to = "Model",
+    values_to = "Predicted"
+  ) %>%
+  mutate(
+    Model = recode(
+      Model,
+      "pred_gbm" = "Gradient Boosting",
+      "pred_rf"  = "Random Forest"
+    )
+  )
+
+ggplot(compare_long, aes(x = actual, y = Predicted)) +
+  geom_point(alpha = 0.3, color = "#E10600", size = 2) +
+  geom_abline(
+    slope = 1,
+    intercept = 0,
+    linetype = "dashed",
+    color = "#00D2BE",
+    size = 1
+  ) +
   facet_wrap(~ Model, nrow = 1) +
   labs(
     title = "Actual vs Predicted Finishing Position",
@@ -351,6 +426,26 @@ ggplot(compare_long, aes(x = actual, y = Predicted)) +
 
 4. **Model Choice** - Gradient Boosting captures non-linear relationships better than linear models, providing the best accuracy.
 
+
+## Limitations & Future Work
+
+**Current Limitations:**
+
+- Doesn't account for weather conditions
+- Limited driver skill metrics beyond wins
+- No tire compound or detailed strategy data
+
+**Future Improvements:**
+
+- Incorporate weather and track characteristics
+- Add more granular driver performance metrics
+- Include detailed pit stop strategy and tire data
+- Analyze season-long trends and car development
+- Real-time predictions during race weekends
+
+
+
+
 ## Conclusion
 
 <div class="columns-2">
@@ -359,6 +454,8 @@ ggplot(compare_long, aes(x = actual, y = Predicted)) +
 ✓ Strategy and reliability are crucial for success
 
 ✓ Qualifying speed and team quality are vital
+
+✓ Machine learning can predict F1 races with high accuracy
 
 ✓ Gradient Boosting outperforms linear models
 
@@ -381,5 +478,3 @@ Rohan, Timur, Sanjay, Luke
 
 *Formula 1 Data Science Project*
 </div>
-
-
