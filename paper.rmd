@@ -24,17 +24,21 @@ constructors.csv -Contains details about the teams (constructors), including the
 
 qualifying.csv -Records the results from qualifying sessions, which determine the starting grid. 
 
-lap_times.csv(Rohan) - Provides lap-by-lap timing data for each driver within a race. 
+lap_times.csv- Provides lap-by-lap timing data for each driver within a race. 
 
-pit_stops.csv(Timur) - Details every pit stop, including the lap number, duration, and driver. 
+pit_stops.csv - Details every pit stop, including the lap number, duration, and driver. 
 
-driver_standings.csv(Timur) - Tracks the championship standings for each driver after every race. 
+driver_standings.csv- Tracks the championship standings for each driver after every race. 
 
 constructor_standings.csv - Tracks the championship standings for each constructor after every race. 
 
 circuits.csv - Provides information about each race circuit, including its location and country. 
 
 status.csv - Defines the various finishing statuses (Finished, Accident). 
+
+ 
+
+ 
 
  
 
@@ -50,13 +54,45 @@ Testing models such as linear regression and Lasso, gradient boosting and
 
 Comparing model performance and accuracy 
 
+The goal of this project is to provide a data-driven look at the variables that influence Formula 1 success. We want to identify the factors that have the greatest impact on race outcomes through developing and evaluating predictive models in R. The results will show how to apply machine learning techniques to a real-world problem. To improve the predicted accuracy, we will also be exploring more advanced modeling algorithms, such as gradient boosting. 
+
+Analysis 
+
+Once the data was cleaned, we chose a 70 30 random split for training and testing data. The models were then developed and trained with the data from previous Formula 1 car racing events to determine how well the models could predict the position the driver would finish in an event. We determined how well each model performed by comparing the predictions with actual results and obtaining a test error rate for each model. A lower test error rate meant that the model performed better.  
+
+In every model, certain variables proved to be major contributors to the results in the race. The number of laps and qualifying positions were some of the most influential variables, showing the importance of qualifying performance on the outcome in the race. Lap-based variables, such as average lap time and fastest lap time, proved to be strong predictors of final position, as they measure overall relative speed during the race. Pitstops, or pit stop count, proved to be negatively influential, with drivers taking more pit stops usually ending up at the back. 
+
+When comparing the models, linear models were helpful for identifying overall patterns within the data but were poor at identifying more complicated patterns. The lasso model helped remove the effects of noise within the data by reducing the impact of non-important variables. In comparison, the two non-linear models, gradient boosting and random forest, both had a test root mean squared error that was 1 unit less than the two linear models. The non-linear models likely performed better because the outcome of F1 races is based on complex interactions instead of a straight-line fit. Although the non-linear models performed better, they had a test error rate of around 4. In an F1 race, there are only 20 finishing spots, so these models still do not do a great job of predicting final position. This is because there are so many variables that influence the final position, so it becomes very difficult to predict with great accuracy.  
+
+  
+
+ 
+
+ 
+
+Results 
+
+To get a better insight into the performances of the models, the predicted final positions of the teams/cars were compared with the performances in previous formula one racing events. While the simpler models could predict performances with general accuracy, the more complex ones could adjust the performances using a combination of certain variables such as qualifying position and laps completed. 
+
+We also attempted to compare the predicted standings of the drivers with the actual standings of the drivers in a season. Though none of the models were able to replicate the performances accurately, gradient boosting performed the best in estimating the performances of the drivers. 
+
+  
+
 Conclusion 
 
-The goal of this project is to provide a data-driven look at the variables that influence Formula 1 success. We want to identify the factors that have the greatest impact on race outcomes through developing and evaluating predictive models in R. The results will show how to apply machine learning techniques to a real-world problem. In order to improve the predicted accuracy, we will also be exploring more advanced modeling algorithms, such as gradient boosting. 
+Considering the observations above, the benefits and capabilities of various models were identified through our analysis, and the importance of each role played by the variables in the context of the Formula 1 outcome was estimated. It was noticed that though the basic models are easier to interpret, more sophisticated models are more accurate in predictions. This is just the tip of the iceberg regarding applying machine learning to sports analytics problems. There could be additional variables included to make this model even more accurate, such as weather, safety of car deployments, or even driver-level variables. Outlining models in this way show just how much more could be learned about success factors for formula racing. 
 
  
 
  
+
+ 
+
+ 
+
+Works Cited  
+
+Vopani. “Formula 1 World Championship (1950 - 2024).” Kaggle, 29 Jan. 2025, www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020?resource=download. 
 
  
 
